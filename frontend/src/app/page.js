@@ -1,9 +1,13 @@
-export default function Home() {
-  return (
-    <main className="min-h-screen flex items-center justify-center bg-purple-100">
-      <h1 className="text-3xl font-bold text-purple-700">
-        ¡Tailwind está vivo y funcionando! 🐾
-      </h1>
-    </main>
-  );
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function Page() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/productos');
+  }, []);
+
+  return null;
 }
