@@ -1,27 +1,51 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const loadComponent = (id, url) => {
-        fetch(url)
-            .then(res => {
-                if (!res.ok) throw new Error(`Error ${res.status}: ${url}`);
-                return res.text();
-            })
-            .then(html => {
-                document.getElementById(id).innerHTML = html;
-            })
-            .catch(err => console.error("Falló carga de componente:", err));
-    };
+  const loadComponent = (id, url, callback) => {
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error(`Error ${res.status}: ${url}`);
+        return res.text();
+      })
+      .then(html => {
+        document.getElementById(id).innerHTML = html;
+        if (callback) callback();
+      })
+      .catch(err => console.error("Falló carga de componente:", err));
+  };
 
-    loadComponent("navbar", "/components/navbar.html");
-    loadComponent("footer", "/components/footer.html");
+  // ✅ Cargar navbar y luego configurar elementos que dependen de él
+  loadComponent("navbar", "/components/navbar.html", () => {
+    const logoLink = document.getElementById("logo-link");
+    const salirItem = document.getElementById("salir-item");
+    const currentPage = window.location.pathname;
+
+    if (logoLink) {
+      if (currentPage.includes("index.html")) {
+        logoLink.href = "/src/login.html";
+      } else if (currentPage.includes("login.html") || currentPage.includes("dashboard.html")) {
+        logoLink.href = "/index.html";
+      } else {
+        logoLink.href = "/src/login.html";
+      }
+    }
+
+    // ✅ Ocultar "Salir" si no estás en dashboard.html
+    if (salirItem && !currentPage.includes("dashboard.html")) {
+      salirItem.style.display = "none";
+    }
+  });
+
+  // Cargar footer sin lógica adicional
+  loadComponent("footer", "/components/footer.html");
 });
+
 
 //boton flotante
 document.addEventListener("DOMContentLoaded", () => {
-  const carrito = {}; // 📦 guarda cada producto por ID
+  const carrito = {};
   const finalizarBtn = document.getElementById("btn-finalizar");
   const botonesAgregar = document.querySelectorAll(".agregar-carrito");
 
-  // 🟢 Al hacer clic en "Agregar al carrito"
+  // Agregar productos al carrito
   botonesAgregar.forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
@@ -44,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 🟡 Finalizar compra → mostrar resumen de los productos agregados
+  // Finalizar compra
   finalizarBtn.addEventListener("click", () => {
     const productosElegidos = Object.values(carrito);
     if (productosElegidos.length === 0) {
@@ -76,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     Swal.fire({
       title: "Resumen de compra",
       html,
-      confirmButtonText: "Continuar",
+      confirmButtonText: "Enviar Pedido",
       showDenyButton: true,
       denyButtonText: "Vaciar carrito",
       showCloseButton: true,
@@ -99,27 +123,81 @@ document.addEventListener("DOMContentLoaded", () => {
         finalizarBtn.style.display = "none";
         Swal.fire("Carrito vaciado", "", "success");
       }
-    });
 
-    // 🔄 Actualización dinámica dentro del modal
-    productosElegidos.forEach((p, i) => {
-      setTimeout(() => {
-        const input = document.getElementById(`edit-${i}`);
-        input?.addEventListener("input", () => {
-          const nuevaCantidad = parseInt(input.value) || 0;
-          const nuevoTotal = nuevaCantidad * p.precio;
-          document.getElementById(`total-${i}`).textContent = nuevoTotal;
-          carrito[p.id].cantidad = nuevaCantidad;
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Datos del comprador",
+          html: `
+            <input id="nombre" class="swal2-input" placeholder="Nombre" />
+            <input id="apellido" class="swal2-input" placeholder="Apellido" />
+            <input id="whatsapp" class="swal2-input" placeholder="WhatsApp" />
+          `,
+          confirmButtonText: "Confirmar",
+          focusConfirm: false,
+          preConfirm: () => {
+            const nombre = document.getElementById("nombre").value;
+            const apellido = document.getElementById("apellido").value;
+            const whatsapp = document.getElementById("whatsapp").value;
 
-          let nuevoTotalGeneral = 0;
-          productosElegidos.forEach((pe, j) => {
-            const cant = parseInt(document.getElementById(`edit-${j}`)?.value) || 0;
-            nuevoTotalGeneral += cant * pe.precio;
-          });
+            if (!nombre || !apellido || !whatsapp) {
+              Swal.showValidationMessage("Todos los campos son obligatorios");
+              return false;
+            }
 
-          document.getElementById("total-general").textContent = nuevoTotalGeneral;
+            return { nombre, apellido, whatsapp };
+          }
+        }).then((datos) => {
+          if (datos.isConfirmed) {
+            console.log("Pedido enviado:", {
+              cliente: datos.value,
+              productos: productosElegidos
+            });
+
+            Swal.fire({
+              title: "Pedido confirmado",
+              html: `
+                <p>Gracias por tu compra, <strong>${datos.value.nombre}</strong> 💙</p>
+                <p>Te redireccionamos a nuestro WhatsApp para finalizar el pedido ✅</p>
+              `,
+              icon: "success",
+              timer: 3000,
+              showConfirmButton: false
+            }).then(() => {
+              const mensaje = encodeURIComponent(
+                `Hola soy ${datos.value.nombre} ${datos.value.apellido}, quiero finalizar mi pedido:\n\n` +
+                productosElegidos.map(p => `🛒 ${p.cantidad} x ${p.nombre} ($${p.precio})`).join('\n') +
+                `\n\n📱 Mi número es: ${datos.value.whatsapp}`
+              );
+
+              window.location.href = `https://wa.me/543855075058?text=${mensaje}`;
+            });
+          }
         });
-      }, 300);
+      }
+
+      // Actualización dinámica de cantidades y totales
+      productosElegidos.forEach((p, i) => {
+        setTimeout(() => {
+          const input = document.getElementById(`edit-${i}`);
+          input?.addEventListener("input", () => {
+            const nuevaCantidad = parseInt(input.value) || 0;
+            const nuevoTotal = nuevaCantidad * p.precio;
+            document.getElementById(`total-${i}`).textContent = nuevoTotal;
+            carrito[p.id].cantidad = nuevaCantidad;
+
+            let nuevoTotalGeneral = 0;
+            productosElegidos.forEach((pe, j) => {
+              const cant = parseInt(document.getElementById(`edit-${j}`)?.value) || 0;
+              nuevoTotalGeneral += cant * pe.precio;
+            });
+
+            document.getElementById("total-general").textContent = nuevoTotalGeneral;
+          });
+        }, 300);
+      });
     });
   });
 });
+
+
+// Opcion de Enviar Pedido

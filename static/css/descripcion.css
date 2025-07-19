@@ -1,0 +1,125 @@
+/* 🎨 Fondo animado */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(270deg, #ff6ec4, #7873f5, #4ed7c7);
+  background-size: 600% 600%;
+  animation: fondoAnimado 8s ease infinite;
+}
+
+@keyframes fondoAnimado {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 🌟 Logo animado */
+.logo-container {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.logo-container img {
+  width: 120px;
+  height: auto;
+  animation: logoIntro 4s ease-out forwards, logoLoop 12s ease-in-out infinite 6s;
+  transform-origin: center center;
+}
+
+/* 🔄 Animación inicial: escala + rotación */
+@keyframes logoIntro {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(0deg);
+    filter: blur(5px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    filter: blur(0px);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+/* 🔁 Animación infinita con pausa: rotación suave */
+@keyframes logoLoop {
+  0%   { transform: scale(1) rotate(0deg); }
+  50%  { transform: scale(1) rotate(360deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+
+/* 📦 Contenedor general */
+.contenedor {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  animation: slideUp 1s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.titulo {
+  text-align: center;
+  color: #007bff;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.descripcion {
+  font-size: 1.1rem;
+  color: #444;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* 🗺️ Ubicación */
+.ubicacion h2 {
+  color: #00897b;
+  margin-top: 30px;
+}
+
+.mapa-container {
+  margin-top: 10px;
+  width: 100%;
+  height: 300px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  animation: zoomIn 1s ease;
+}
+
+.mapa-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+@keyframes zoomIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 🦶 Footer fijo al fondo */
+#footer {
+  width: 100%;;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  position: relative;
+  margin-top: 40px;
+  animation: fadeFooter 1s ease;
+}
+
+@keyframes fadeFooter {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
