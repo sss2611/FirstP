@@ -1,3 +1,4 @@
+/* 🌐 Estructura del documento */
 html, body {
   height: 100%;
   margin: 0;
@@ -9,5 +10,50 @@ body {
 }
 
 main {
-    flex: 1;
+  flex: 1;
+}
+
+/* 🛍️ Grilla de productos */
+.productos {
+  margin-top: 2rem;
+}
+
+/* 🃏 Estilo base de las cards */
+.productos .card {
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+/* 👆 Animación suave al hacer hover */
+.productos .card:hover {
+  transform: translateY(-5px);
+}
+
+/* 📷 Imágenes dentro de cards */
+.productos .card-img-top {
+  object-fit: cover;
+  height: 180px;
+}
+
+/* 📱 Responsive text */
+.productos .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.productos .card-text {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+/* 📱 Ajustes para pantallas pequeñas */
+@media (max-width: 576px) {
+  .productos .card-img-top {
+    height: 140px;
+  }
+
+  .productos .card-title {
+    font-size: 1rem;
+  }
 }
