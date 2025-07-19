@@ -123,3 +123,44 @@ body {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* Botón flotante  */
+.boton-neon {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  padding: 14px 36px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 6px; /* bordes apenas redondeados */
+  font-size: 16px;
+  font-family: 'Helvetica Neue', sans-serif;
+  cursor: pointer;
+  z-index: 1000;
+  overflow: hidden;
+  box-shadow: 0 0 12px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease;
+}
+
+.boton-neon:hover {
+  transform: scale(1.05);
+}
+
+/* Borde animado tipo neón */
+.boton-neon::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #4f3e7e, #d644d6, #00ff00);
+  z-index: -1;
+  border-radius: 8px;
+  animation: bordeNeon 4s linear infinite;
+}
+
+@keyframes bordeNeon {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}

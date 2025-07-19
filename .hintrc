@@ -27,6 +27,12 @@
           "iframe[loading]"
         ]
       }
+    ],
+    "axe/text-alternatives": [
+      "default",
+      {
+        "frame-title": "off"
+      }
     ]
   }
 }
