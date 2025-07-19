@@ -1,124 +1,125 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Función para cargar componentes
-  const loadComponent = (id, url, callback) => {
-    fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error(`Error ${res.status}: ${url}`);
-        return res.text();
-      })
-      .then(html => {
-        document.getElementById(id).innerHTML = html;
-        if (callback) callback();
-      })
-      .catch(err => console.error("Falló carga de componente:", err));
-  };
+    const loadComponent = (id, url) => {
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error(`Error ${res.status}: ${url}`);
+                return res.text();
+            })
+            .then(html => {
+                document.getElementById(id).innerHTML = html;
+            })
+            .catch(err => console.error("Falló carga de componente:", err));
+    };
 
-  // Cargar navbar
-  loadComponent("navbar", "/components/navbar.html");
+    loadComponent("navbar", "/components/navbar.html");
+    loadComponent("footer", "/components/footer.html");
+});
 
-  // Cargar footer y luego activar el botón flotante
-  loadComponent("footer", "/components/footer.html", () => {
-    const finalizarBtn = document.getElementById("btn-finalizar");
-    const agregarBtns = document.querySelectorAll(".btn-success");
+//boton flotante
+document.addEventListener("DOMContentLoaded", () => {
+  const carrito = {}; // 📦 guarda cada producto por ID
+  const finalizarBtn = document.getElementById("btn-finalizar");
+  const botonesAgregar = document.querySelectorAll(".agregar-carrito");
 
-    if (!finalizarBtn) {
-      console.warn("No se encontró el botón #btn-finalizar.");
+  // 🟢 Al hacer clic en "Agregar al carrito"
+  botonesAgregar.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      const nombre = btn.dataset.producto;
+      const precio = parseFloat(btn.dataset.precio);
+      const inputId = btn.dataset.input;
+      const input = document.getElementById(inputId);
+      const cantidad = parseInt(input?.value) || 0;
+
+      if (cantidad > 0) {
+        carrito[id] = { id, nombre, precio, cantidad, inputId };
+        btn.textContent = "Agregado";
+        btn.disabled = true;
+        btn.classList.remove("btn-success");
+        btn.classList.add("btn-secondary");
+        finalizarBtn.style.display = "block";
+      } else {
+        Swal.fire("Seleccioná una cantidad válida", "", "warning");
+      }
+    });
+  });
+
+  // 🟡 Finalizar compra → mostrar resumen de los productos agregados
+  finalizarBtn.addEventListener("click", () => {
+    const productosElegidos = Object.values(carrito);
+    if (productosElegidos.length === 0) {
+      Swal.fire("Carrito vacío", "No hay productos agregados.", "info");
       return;
     }
 
-    // Mostrar botón al agregar un producto
-    agregarBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        finalizarBtn.style.display = "block";
-      });
+    let html = '';
+    let totalGeneral = 0;
+
+    productosElegidos.forEach((p, i) => {
+      const total = p.precio * p.cantidad;
+      totalGeneral += total;
+
+      html += `
+        <div style="text-align:left; margin-bottom:10px;">
+          <strong>${p.nombre}</strong><br>
+          Precio: $${p.precio}<br>
+          Cantidad: <input id="edit-${i}" type="number" min="1" value="${p.cantidad}" style="width:60px;" /><br>
+          Total: $<span id="total-${i}">${total}</span>
+        </div><hr />
+      `;
     });
 
-    // Al hacer clic en "Finalizar compra"
-    finalizarBtn.addEventListener("click", () => {
-      const productos = [
-        { nombre: "Producto 1", precio: 1500, inputId: "cantidad-1" },
-        { nombre: "Producto 2", precio: 1500, inputId: "cantidad-2" },
-        { nombre: "Producto 3", precio: 1500, inputId: "cantidad-3" },
-        { nombre: "Producto 4", precio: 1500, inputId: "cantidad-4" },
-        { nombre: "Producto 5", precio: 1500, inputId: "cantidad-5" },
-        { nombre: "Producto 6", precio: 1500, inputId: "cantidad-6" }
-      ];
+    html += `<div style="text-align:right; font-size:1.1rem;">
+      <strong>Total general:</strong> $<span id="total-general">${totalGeneral}</span>
+    </div>`;
 
-      let html = '';
-      let totalGeneral = 0;
-      const productosElegidos = [];
-
-      productos.forEach((p, i) => {
-        const input = document.getElementById(p.inputId);
-        const cantidad = parseInt(input?.value) || 0;
-        if (cantidad > 0) {
-          const total = cantidad * p.precio;
-          totalGeneral += total;
-          productosElegidos.push({ ...p, cantidad, index: i });
-          html += `
-            <div style="text-align:left; margin-bottom:10px;">
-              <strong>${p.nombre}</strong><br>
-              Precio: $${p.precio}<br>
-              Cantidad: <input id="edit-${i}" type="number" min="1" value="${cantidad}" style="width:60px;" /><br>
-              Total: $<span id="total-${i}">${total}</span>
-            </div>
-            <hr />
-          `;
-        }
-      });
-
-      if (productosElegidos.length === 0) {
-        Swal.fire({
-          icon: "info",
-          title: "Carrito vacío",
-          text: "No hay productos seleccionados.",
-          confirmButtonText: "Entendido"
+    Swal.fire({
+      title: "Resumen de compra",
+      html,
+      confirmButtonText: "Continuar",
+      showDenyButton: true,
+      denyButtonText: "Vaciar carrito",
+      showCloseButton: true,
+      width: 600
+    }).then(result => {
+      if (result.isDenied) {
+        productosElegidos.forEach((p) => {
+          const input = document.getElementById(p.inputId);
+          const btn = document.querySelector(`[data-id="${p.id}"]`);
+          if (input) input.value = 0;
+          if (btn) {
+            btn.textContent = "Agregar al carrito";
+            btn.disabled = false;
+            btn.classList.remove("btn-secondary");
+            btn.classList.add("btn-success");
+          }
         });
-        return;
+
+        Object.keys(carrito).forEach(k => delete carrito[k]);
+        finalizarBtn.style.display = "none";
+        Swal.fire("Carrito vaciado", "", "success");
       }
+    });
 
-      html += `<div style="text-align:right; font-size:1.1rem;">
-                 <strong>Total general:</strong> $<span id="total-general">${totalGeneral}</span>
-               </div>`;
+    // 🔄 Actualización dinámica dentro del modal
+    productosElegidos.forEach((p, i) => {
+      setTimeout(() => {
+        const input = document.getElementById(`edit-${i}`);
+        input?.addEventListener("input", () => {
+          const nuevaCantidad = parseInt(input.value) || 0;
+          const nuevoTotal = nuevaCantidad * p.precio;
+          document.getElementById(`total-${i}`).textContent = nuevoTotal;
+          carrito[p.id].cantidad = nuevaCantidad;
 
-      Swal.fire({
-        title: "Resumen de compra",
-        html: html,
-        confirmButtonText: "Continuar",
-        showDenyButton: true,
-        denyButtonText: "Vaciar carrito",
-        showCloseButton: true,
-        width: 600
-      }).then(result => {
-        if (result.isDenied) {
-          productos.forEach(p => {
-            const input = document.getElementById(p.inputId);
-            if (input) input.value = 0;
+          let nuevoTotalGeneral = 0;
+          productosElegidos.forEach((pe, j) => {
+            const cant = parseInt(document.getElementById(`edit-${j}`)?.value) || 0;
+            nuevoTotalGeneral += cant * pe.precio;
           });
-          finalizarBtn.style.display = "none";
-          Swal.fire("Carrito vaciado", "Todos los productos fueron reiniciados.", "success");
-        }
-      });
 
-      // Listeners para editar cantidades en tiempo real
-      productosElegidos.forEach(p => {
-        setTimeout(() => {
-          const input = document.getElementById(`edit-${p.index}`);
-          input?.addEventListener("input", () => {
-            const nuevaCantidad = parseInt(input.value) || 0;
-            const nuevoTotal = nuevaCantidad * p.precio;
-            document.getElementById(`total-${p.index}`).textContent = nuevoTotal;
-
-            // Recalcular total general
-            let nuevoTotalGeneral = 0;
-            productosElegidos.forEach(pe => {
-              const cantidadEditada = parseInt(document.getElementById(`edit-${pe.index}`)?.value) || 0;
-              nuevoTotalGeneral += cantidadEditada * pe.precio;
-            });
-            document.getElementById("total-general").textContent = nuevoTotalGeneral;
-          });
-        }, 300);
-      });
+          document.getElementById("total-general").textContent = nuevoTotalGeneral;
+        });
+      }, 300);
     });
   });
 });
