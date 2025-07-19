@@ -1,0 +1,15 @@
+.navbar-brand {
+  text-align: center;
+}
+
+.navbar-brand h2 {
+  margin-top: 0.25rem;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+@media (min-width: 992px) {
+  .navbar .container-fluid {
+    justify-content: center;
+  }
+}
