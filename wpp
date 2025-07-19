@@ -1,7 +1,0 @@
-function enviarPorWhatsApp(pdfBase64) {
-  const telefonoDueño = "549XXXXXXXXXX";
-  const mensaje = `Hola! Te envío el pedido en PDF`;
-  const link = `https://wa.me/${telefonoDueño}?text=${encodeURIComponent(mensaje)}`;
-  window.open(link, "_blank");
-}
-
