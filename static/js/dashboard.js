@@ -1,10 +1,14 @@
+// 📦 Lista de productos cargados desde la API
 let productos = [];
 const contenedor = document.getElementById("cards-dashboard");
 
-// Carga productos desde la API
+// 🌐 URL base de tu backend en Vercel
+const API_URL = "https://firstp-backend-8w2v.vercel.app/api/productos";
+
+// 🔁 Carga productos desde la API (modo administrador)
 async function cargarProductos() {
     try {
-        const res = await fetch("https://firstp-backend.vercel.app/api/productos/admin");
+        const res = await fetch(`${API_URL}/admin`);
         productos = await res.json();
         renderDashboard();
     } catch (err) {
@@ -12,7 +16,7 @@ async function cargarProductos() {
     }
 }
 
-// Renderiza cards en el dashboard
+// 🎨 Renderiza cards en el dashboard
 function renderDashboard() {
     contenedor.innerHTML = "";
 
@@ -39,7 +43,7 @@ function renderDashboard() {
     });
 }
 
-// Crear botón para agregar productos
+// ➕ Crea el botón para agregar productos
 function crearBotonAgregar() {
     const btn = document.createElement("button");
     btn.id = "btn-nuevo";
@@ -48,11 +52,12 @@ function crearBotonAgregar() {
     document.getElementById("boton-agregar").appendChild(btn);
 }
 
-// Manejador de eventos
+// 🧠 Manejador general de eventos
 document.addEventListener("click", async (e) => {
     const id = e.target.dataset.id;
     const producto = productos.find(p => p._id === id);
 
+    // ✏️ Editar producto
     if (e.target.classList.contains("editar")) {
         Swal.fire({
             title: "Editar producto",
@@ -97,7 +102,7 @@ document.addEventListener("click", async (e) => {
                     publicado: producto.publicado
                 };
 
-                await fetch(`https://firstp-backend.vercel.app/api/productos/${id}`, {
+                await fetch(`${API_URL}/${id}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(actualizado)
@@ -108,6 +113,7 @@ document.addEventListener("click", async (e) => {
         });
     }
 
+    // 🗑️ Eliminar producto
     if (e.target.classList.contains("eliminar")) {
         Swal.fire({
             title: "¿Eliminar este producto?",
@@ -116,7 +122,7 @@ document.addEventListener("click", async (e) => {
             cancelButtonText: "Cancelar",
         }).then(async (r) => {
             if (r.isConfirmed) {
-                await fetch(`https://firstp-backend.vercel.app/api/productos/${id}`, {
+                await fetch(`${API_URL}/${id}`, {
                     method: "DELETE"
                 });
                 cargarProductos();
@@ -124,10 +130,11 @@ document.addEventListener("click", async (e) => {
         });
     }
 
+    // 👁️ Publicar/Ocultar producto
     if (e.target.classList.contains("publicar")) {
         const actualizado = { ...producto, publicado: !producto.publicado };
 
-        await fetch(`https://firstp-backend.vercel.app/api/productos/${id}`, {
+        await fetch(`${API_URL}/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(actualizado)
@@ -136,6 +143,7 @@ document.addEventListener("click", async (e) => {
         cargarProductos();
     }
 
+    // ➕ Agregar nuevo producto
     if (e.target.id === "btn-nuevo") {
         Swal.fire({
             title: "Agregar nuevo producto",
@@ -174,7 +182,7 @@ document.addEventListener("click", async (e) => {
             }
         }).then(async (r) => {
             if (r.isConfirmed) {
-                await fetch("https://firstp-backend.vercel.app/api/productos", {
+                await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(r.value)
@@ -185,6 +193,7 @@ document.addEventListener("click", async (e) => {
     }
 });
 
+// 🚀 Inicializa el dashboard
 document.addEventListener("DOMContentLoaded", () => {
     crearBotonAgregar();
     cargarProductos();
