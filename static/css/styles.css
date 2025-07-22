@@ -57,3 +57,44 @@ main {
     font-size: 1rem;
   }
 }
+
+/* boton enviar pedido */
+.btn-neon {
+  font-size: 18px;
+  padding: 12px 28px;
+  border-radius: 50px;
+  border: none;
+  background: #ff007f;
+  color: rgb(255, 255, 255);
+  font-weight: bold;
+  box-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f;
+  transition: all 0.3s ease-in-out;
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.btn-neon:hover {
+  box-shadow: 0 0 20px #ff007f, 0 0 40px #ff007f;
+  transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* celular */
+@media (max-width: 600px) {
+  #btn-finalizar {
+    left: 85% !important; /* centrado */
+    transform: translate(-50%, -50%) !important;
+  }
+}
+
+/* tablets */
+@media (min-width: 601px) and (max-width: 1024px) {
+  #btn-finalizar {
+    left: 90% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+}
+

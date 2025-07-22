@@ -122,82 +122,89 @@ document.addEventListener("DOMContentLoaded", () => {
         Object.keys(carrito).forEach(k => delete carrito[k]);
         finalizarBtn.style.display = "none";
         Swal.fire("Carrito vaciado", "", "success");
+        return;
       }
 
       if (result.isConfirmed) {
         Swal.fire({
           title: "Datos del comprador",
           html: `
-            <input id="nombre" class="swal2-input" placeholder="Nombre" />
-            <input id="apellido" class="swal2-input" placeholder="Apellido" />
-            <input id="whatsapp" class="swal2-input" placeholder="WhatsApp" />
-          `,
+    <input id="nombre" class="swal2-input" placeholder="Nombre" />
+    <input id="apellido" class="swal2-input" placeholder="Apellido" />
+    <select id="ubicacion" class="swal2-input">
+      <option value="" disabled selected>Ubicación</option>
+      <option value="Santiago del Estero">Sgo</option>
+      <option value="La Banda">Banda</option>
+    </select>
+    <select id="pago" class="swal2-input">
+      <option value="" disabled selected>Forma de pago</option>
+      <option value="Transferencia">Transferencia</option>
+      <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+      <option value="Efectivo">Efectivo</option>
+    </select>
+  `,
           confirmButtonText: "Confirmar",
           focusConfirm: false,
           preConfirm: () => {
-            const nombre = document.getElementById("nombre").value;
-            const apellido = document.getElementById("apellido").value;
-            const whatsapp = document.getElementById("whatsapp").value;
+            const nombre = document.getElementById("nombre").value.trim();
+            const apellido = document.getElementById("apellido").value.trim();
+            const ubicacion = document.getElementById("ubicacion").value;
+            const pago = document.getElementById("pago").value;
 
-            if (!nombre || !apellido || !whatsapp) {
+            if (!nombre || !apellido || !ubicacion || !pago) {
               Swal.showValidationMessage("Todos los campos son obligatorios");
               return false;
             }
 
-            return { nombre, apellido, whatsapp };
+            return { nombre, apellido, ubicacion, pago };
           }
         }).then((datos) => {
-          if (datos.isConfirmed) {
-            console.log("Pedido enviado:", {
-              cliente: datos.value,
-              productos: productosElegidos
-            });
+          if (!datos.isConfirmed) return;
 
-            Swal.fire({
-              title: "Pedido confirmado",
-              html: `
-                <p>Gracias por tu compra, <strong>${datos.value.nombre}</strong> 💙</p>
-                <p>Te redireccionamos a nuestro WhatsApp para finalizar el pedido ✅</p>
-              `,
-              icon: "success",
-              timer: 3000,
-              showConfirmButton: false
-            }).then(() => {
-              const mensaje = encodeURIComponent(
-                `Hola soy ${datos.value.nombre} ${datos.value.apellido}, quiero finalizar mi pedido:\n\n` +
-                productosElegidos.map(p => `🛒 ${p.cantidad} x ${p.nombre} ($${p.precio})`).join('\n') +
-                `\n\n📱 Mi número es: ${datos.value.whatsapp}`
-              );
+          const cliente = datos.value;
+          const mensaje = encodeURIComponent(
+            `👤 Pedido de ${cliente.nombre} ${cliente.apellido}\n` +
+            `📍 Ubicación: ${cliente.ubicacion}\n` +
+            `💳 Forma de pago: ${cliente.pago}\n` +
+            productosElegidos.map(p => `🛒 ${p.cantidad} x ${p.nombre} ($${p.precio})`).join('\n') +
+            `\n\n💵 Total: $${productosElegidos.reduce((t, p) => t + p.precio * p.cantidad, 0)}`
+          );
 
-              window.location.href = `https://wa.me/543855075058?text=${mensaje}`;
+          Swal.fire({
+            title: "Pedido confirmado",
+            html: `
+      <p>Gracias por tu compra, <strong>${cliente.nombre}</strong> 💙</p>
+      <p>Te redireccionamos a nuestro WhatsApp para finalizar el pedido ✅</p>
+    `,
+            icon: "success",
+            timer: 3000,
+            showConfirmButton: false
+          }).then(() => {
+            window.location.href = `https://wa.me/543855075058?text=${mensaje}`;
+          });
+        });
+
+        // Actualización dinámica de cantidades y totales
+        productosElegidos.forEach((p, i) => {
+          setTimeout(() => {
+            const input = document.getElementById(`edit-${i}`);
+            input?.addEventListener("input", () => {
+              const nuevaCantidad = parseInt(input.value) || 0;
+              const nuevoTotal = nuevaCantidad * p.precio;
+              document.getElementById(`total-${i}`).textContent = nuevoTotal;
+              carrito[p.id].cantidad = nuevaCantidad;
+
+              let nuevoTotalGeneral = 0;
+              productosElegidos.forEach((pe, j) => {
+                const cant = parseInt(document.getElementById(`edit-${j}`)?.value) || 0;
+                nuevoTotalGeneral += cant * pe.precio;
+              });
+
+              document.getElementById("total-general").textContent = nuevoTotalGeneral;
             });
-          }
+          }, 300);
         });
       }
-
-      // Actualización dinámica de cantidades y totales
-      productosElegidos.forEach((p, i) => {
-        setTimeout(() => {
-          const input = document.getElementById(`edit-${i}`);
-          input?.addEventListener("input", () => {
-            const nuevaCantidad = parseInt(input.value) || 0;
-            const nuevoTotal = nuevaCantidad * p.precio;
-            document.getElementById(`total-${i}`).textContent = nuevoTotal;
-            carrito[p.id].cantidad = nuevaCantidad;
-
-            let nuevoTotalGeneral = 0;
-            productosElegidos.forEach((pe, j) => {
-              const cant = parseInt(document.getElementById(`edit-${j}`)?.value) || 0;
-              nuevoTotalGeneral += cant * pe.precio;
-            });
-
-            document.getElementById("total-general").textContent = nuevoTotalGeneral;
-          });
-        }, 300);
-      });
     });
   });
 });
-
-
-// Opcion de Enviar Pedido
