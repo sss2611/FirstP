@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
             timer: 3000,
             showConfirmButton: false
           }).then(() => {
-            window.location.href = `https://wa.me/543854208162?text=${mensaje}`;
+            window.location.href = `https://wa.me/543855075058?text=${mensaje}`;
           });
         });
 
