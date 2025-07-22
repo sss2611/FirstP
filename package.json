@@ -1,0 +1,20 @@
+{
+  "name": "firstp",
+  "version": "1.0.0",
+  "description": "firstp-backend/ │ ├── .env ├── index.js ├── models/ │   └── Producto.js ├── routes/ │   └── productos.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sss2611/FirstP.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sss2611/FirstP/issues"
+  },
+  "homepage": "https://github.com/sss2611/FirstP#readme"
+}
