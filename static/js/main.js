@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `👤 Pedido de ${cliente.nombre} ${cliente.apellido}\n` +
             `📍 Ubicación: ${cliente.ubicacion}\n` +
             `💳 Forma de pago: ${cliente.pago}\n` +
-            productosElegidos.map(p => `🛒 ${p.cantidad} x ${p.nombre} ($${p.precio})`).join('\n') +
+            productosElegidos.map(p => `🛒 ${p.cantidad} x ${p.nombre} ($${p.precio*p.cantidad})`).join('\n') +
             `\n\n💵 Total: $${productosElegidos.reduce((t, p) => t + p.precio * p.cantidad, 0)}`
           );
 
