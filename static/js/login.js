@@ -18,8 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = document.getElementById("password").value.trim();
 
     // 🔒 Usuario y contraseña que vos definís acá
-    const usuarioValido = "sansandev";
-    const contraseñaValida = "2025";
+    const usuarioValido = "admin";
+    const contraseñaValida = "1234";
 
     if (username === usuarioValido && password === contraseñaValida) {
       Swal.fire({
