@@ -108,6 +108,23 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 
+.mensaje-contacto {
+  background-color: #eefaf3;
+  border-left: 5px solid #25d366;
+  padding: 1.2rem;
+  font-size: 1rem;
+  margin-top: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  color: #333;
+}
+
+.mensaje-contacto i {
+  color: #25d366; /* Verde WhatsApp */
+  margin-right: 6px;
+}
+
+
 /* 🦶 Footer fijo al fondo */
 #footer {
   width: 100%;;
