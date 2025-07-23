@@ -3,7 +3,7 @@ let productos = [];
 const contenedor = document.getElementById("cards-dashboard");
 
 // 🌐 URL base de tu backend en Vercel
-const API_URL = "https://firstp-backend-8w2v.vercel.app/api/productos";
+const API_URL = "/api/productos";
 
 // 🔁 Carga productos desde la API (modo administrador)
 async function cargarProductos() {

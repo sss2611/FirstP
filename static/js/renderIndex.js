@@ -1,5 +1,5 @@
 // 🌐 URL base del backend
-const API_URL = "https://firstp-backend-8w2v.vercel.app/api/productos";
+const API_URL = "/api/productos";
 
 // 📦 Contenedor donde se renderizan los productos
 const contenedor = document.querySelector(".productos");
