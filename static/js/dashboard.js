@@ -208,27 +208,3 @@ saveButton.addEventListener("click", () => {
     });
 });
 
-function saveConfig() {
-  const buttonText = document.getElementById('button-text');
-  const spinner = document.getElementById('spinner');
-  const button = document.getElementById('save-theme');
-
-  // Mostrar spinner y cambiar texto
-  spinner.classList.remove('d-none');
-  buttonText.textContent = 'Guardando...';
-  button.disabled = true;
-
-  // Simular proceso de guardado (2 segundos)
-  setTimeout(() => {
-    spinner.classList.add('d-none');
-    buttonText.textContent = '✅ Guardado';
-    button.classList.replace('btn-primary', 'btn-success');
-
-    // Restaurar botón tras unos segundos (opcional)
-    setTimeout(() => {
-      buttonText.textContent = 'Guardar configuración';
-      button.classList.replace('btn-success', 'btn-primary');
-      button.disabled = false;
-    }, 2000);
-  }, 2000);
-}
