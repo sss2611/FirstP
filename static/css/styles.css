@@ -13,6 +13,14 @@ main {
   flex: 1;
 }
 
+.config-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+
 /* 🛍️ Grilla de productos */
 /* .productos {
   margin-top: 2rem;
