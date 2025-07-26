@@ -36,4 +36,3 @@ function renderProductos() {
 }
 
 document.addEventListener("DOMContentLoaded", renderProductos);
-

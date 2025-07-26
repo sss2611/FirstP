@@ -5,21 +5,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel del dministrador</title>
-    <link id="theme-link" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/united/bootstrap.min.css" rel="stylesheet" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/logos/SS.png" />    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link id="theme-link" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/united/bootstrap.min.css"
+        rel="stylesheet" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/logos/SS.png" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="/static/css/styles.css" />
     <link rel="stylesheet" href="/static/css/navbar.css" />
     <link rel="stylesheet" href="/static/css/footer.css" />
+    <link rel="stylesheet" href="/static/css/dashboard.css" />
+
 </head>
 
 <body>
     <div id="navbar"></div>
 
-    <div class="container my-4 p-4 border rounded bg-light shadow">
-        <h5 class="mb-3">🎨 Personalizar Estilo del Panel</h5>
-
+    <main>    
+    <div id="theme-box" class="container my-4 p-2 border rounded bg-light shadow">
+        <h5 class="mb-3">🎨 Temas</h5>
         <div class="mb-3">
-            <label for="theme-selector" class="form-label">Seleccionar tema de color:</label>
+            <label for="theme-selector" class="form-label">Seleccionar color:</label>
             <select id="theme-selector" class="form-select">
                 <option value="cerulean">Cerulean</option>
                 <option value="cosmo">Cosmo</option>
@@ -30,12 +34,14 @@
                 <option value="united" selected>United</option>
             </select>
         </div>
-
-        <button id="save-theme" class="btn btn-success">Guardar configuración</button>
+        <button id="save-theme" class="btn btn-primary px-2 py-1 rounded shadow d-flex align-items-center gap-2"
+        onclick="saveConfig()">
+        <span class="spinner-border spinner-border-sm d-none" id="spinner" role="status" aria-hidden="true"></span>
+        <span id="button-text"> Guardar configuración</span>
+    </button>
+</div>
     </div>
 
-
-    <main>
         <section class="container py-5">
             <h1>Carga de Productos Firstp</h1>
             <div id="boton-agregar" class="mb-4"></div>
@@ -51,7 +57,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/static/js/dashboard.js"></script>
     <script src="/static/js/dash_eleccion.js"></script>
-   
 
 </body>
 

@@ -177,3 +177,58 @@ document.addEventListener("DOMContentLoaded", () => {
     crearBotonAgregar();
     renderDashboard();
 });
+
+const themeSelector = document.getElementById("theme-selector");
+const themeLink = document.querySelector("link[href*='bootswatch']");
+const saveButton = document.getElementById("save-theme");
+
+// Cargar tema guardado al entrar
+const savedTheme = localStorage.getItem("selectedTheme");
+if (savedTheme) {
+    themeSelector.value = savedTheme;
+    themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${savedTheme}/bootstrap.min.css`;
+}
+
+// Cambiar tema al seleccionar
+themeSelector.addEventListener("change", (e) => {
+    const theme = e.target.value;
+    themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${theme}/bootstrap.min.css`;
+});
+
+// Guardar configuración
+saveButton.addEventListener("click", () => {
+    const selectedTheme = themeSelector.value;
+    localStorage.setItem("selectedTheme", selectedTheme);
+    Swal.fire({
+        icon: "success",
+        title: "Configuración guardada",
+        text: `Tu tema "${selectedTheme}" fue guardado.`,
+        timer: 2000,
+        showConfirmButton: false
+    });
+});
+
+function saveConfig() {
+  const buttonText = document.getElementById('button-text');
+  const spinner = document.getElementById('spinner');
+  const button = document.getElementById('save-theme');
+
+  // Mostrar spinner y cambiar texto
+  spinner.classList.remove('d-none');
+  buttonText.textContent = 'Guardando...';
+  button.disabled = true;
+
+  // Simular proceso de guardado (2 segundos)
+  setTimeout(() => {
+    spinner.classList.add('d-none');
+    buttonText.textContent = '✅ Guardado';
+    button.classList.replace('btn-primary', 'btn-success');
+
+    // Restaurar botón tras unos segundos (opcional)
+    setTimeout(() => {
+      buttonText.textContent = 'Guardar configuración';
+      button.classList.replace('btn-success', 'btn-primary');
+      button.disabled = false;
+    }, 2000);
+  }, 2000);
+}
