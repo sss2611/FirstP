@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Mostrar/ocultar contraseña
+  // 👁️ Mostrar/ocultar contraseña
   const toggleBtn = document.getElementById("togglePassword");
   const passwordInput = document.getElementById("password");
 
@@ -9,19 +9,21 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.textContent = visible ? "👁️" : "🙈";
   });
 
-  // Validar formulario de login
+  // 🔐 Validar formulario de login y mantener sesión
   const loginForm = document.querySelector("form");
   loginForm.addEventListener("submit", (e) => {
-    e.preventDefault(); // Evita que recargue la página
+    e.preventDefault();
 
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
 
-    // 🔒 Usuario y contraseña que vos definís acá
     const usuarioValido = "admin";
     const contraseñaValida = "1234";
 
     if (username === usuarioValido && password === contraseñaValida) {
+      // ✅ Guardar sesión activa
+      localStorage.setItem("logueado", "true");
+
       Swal.fire({
         icon: "success",
         title: "Ingreso exitoso",

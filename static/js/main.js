@@ -1,44 +1,3 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const loadComponent = (id, url, callback) => {
-    fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error(`Error ${res.status}: ${url}`);
-        return res.text();
-      })
-      .then(html => {
-        document.getElementById(id).innerHTML = html;
-        if (callback) callback();
-      })
-      .catch(err => console.error("Falló carga de componente:", err));
-  };
-
-  // ✅ Cargar navbar y luego configurar elementos que dependen de él
-  loadComponent("navbar", "/components/navbar.html", () => {
-    const logoLink = document.getElementById("logo-link");
-    const salirItem = document.getElementById("salir-item");
-    const currentPage = window.location.pathname;
-
-    if (logoLink) {
-      if (currentPage.includes("index.html")) {
-        logoLink.href = "/src/login.html";
-      } else if (currentPage.includes("login.html") || currentPage.includes("dashboard.html")) {
-        logoLink.href = "/index.html";
-      } else {
-        logoLink.href = "/src/login.html";
-      }
-    }
-
-    // ✅ Ocultar "Salir" si no estás en dashboard.html
-    if (salirItem && !currentPage.includes("dashboard.html")) {
-      salirItem.style.display = "none";
-    }
-  });
-
-  // Cargar footer sin lógica adicional
-  loadComponent("footer", "/components/footer.html");
-});
-
-
 //boton flotante
 document.addEventListener("DOMContentLoaded", () => {
   const carrito = {};
@@ -208,4 +167,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
-

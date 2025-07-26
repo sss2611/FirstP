@@ -208,3 +208,45 @@ saveButton.addEventListener("click", () => {
     });
 });
 
+// Cambiar el nombre de la marca o local
+function guardarMarca() {
+    const marca = document.getElementById('theme-input').value;
+
+    if (marca.trim()) {
+        // ✅ Guardar en localStorage
+        localStorage.setItem('nombreMarca', marca);
+
+        // 🎉 SweetAlert de confirmación
+        Swal.fire({
+            title: '¡Marca guardada!',
+            html: `La marca <strong>${marca}</strong> ha sido registrada.`,
+            icon: 'success',
+            confirmButtonText: 'Perfecto'
+        });
+
+        // 🔄 Actualizar texto en elementos con cierto ID
+        const elementosActualizables = document.querySelectorAll('[data-marca]');
+        elementosActualizables.forEach(el => {
+            el.textContent = marca;
+        });
+
+        // 🧼 Limpiar input
+        document.getElementById('theme-input').value = '';
+    } else {
+        Swal.fire({
+            title: 'Campo vacío',
+            text: 'Por favor ingresa un nombre.',
+            icon: 'warning',
+            confirmButtonText: 'Entendido'
+        });
+    }
+}
+
+const marca = localStorage.getItem('nombreMarca');
+const lugaresMarca = document.querySelectorAll('#nombre-marca');
+
+if (marca && lugaresMarca.length > 0) {
+  lugaresMarca.forEach(el => {
+    el.textContent = marca;
+  });
+}
