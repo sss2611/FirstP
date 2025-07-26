@@ -246,7 +246,56 @@ const marca = localStorage.getItem('nombreMarca');
 const lugaresMarca = document.querySelectorAll('#nombre-marca');
 
 if (marca && lugaresMarca.length > 0) {
-  lugaresMarca.forEach(el => {
-    el.textContent = marca;
-  });
+    lugaresMarca.forEach(el => {
+        el.textContent = marca;
+    });
+}
+
+// Mostrar logo guardado al cargar la página
+window.onload = function () {
+    const logoGuardado = localStorage.getItem("logoGuardado");
+    if (logoGuardado) {
+        document.getElementById("logo-preview").src = logoGuardado;
+    }
+};
+
+function guardarLogo() {
+    const input = document.getElementById("logo-input");
+    const file = input.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const imageUrl = e.target.result;
+
+            // Guardar en localStorage
+            localStorage.setItem("logoGuardado", imageUrl);
+
+            // Mostrar vista previa
+            document.getElementById("logo-preview").src = imageUrl;
+
+            // SweetAlert con imagen
+            Swal.fire({
+                title: "¡Logo guardado!",
+                text: "Tu logo se ha guardado correctamente y se mantendrá al cerrar sesión.",
+                imageUrl: imageUrl,
+                imageAlt: "Vista previa del logo",
+                confirmButtonText: "Aceptar",
+                width: 400,
+                heigth: 50
+            }).then(() => {
+                location.reload();
+            }
+            );
+        };
+        reader.readAsDataURL(file);
+    } else {
+        Swal.fire({
+            icon: "warning",
+            title: "Sin imagen",
+            text: "Subí una imagen antes de guardar.",
+            confirmButtonText: "OK"
+        });
+    }
 }

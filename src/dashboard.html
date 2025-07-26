@@ -19,7 +19,7 @@
 
 <body>
     <div id="navbar"></div>
-
+   
     <main>
         <div id="theme-box" class="container my-4 p-2 border rounded bg-light shadow">
             <h5 class="mb-3"><i class="fa-solid fa-palette me-2"></i>Temas</h5>
@@ -51,11 +51,29 @@
                 <input type="text" class="form-control" id="theme-input" placeholder="Ingresa el nombre de la marca">
             </div>
 
-            <button class="btn btn-primary px-2 py-1 rounded shadow d-flex align-items-center gap-2" onclick="guardarMarca()">
-            Guardar Nombre
+            <button class="btn btn-primary px-2 py-1 rounded shadow d-flex align-items-center gap-2"
+                onclick="guardarMarca()">
+                Guardar Nombre
             </button>
-
         </div>
+
+        <div id="theme-box" class="container my-4 p-2 border rounded bg-light shadow">
+            <h5 class="mb-3">
+                <i class="fa-solid fa-image me-2"></i>Logo
+            </h5>
+
+            <div class="mb-3">
+                <label for="logo-input" class="form-label">Subir Imagen:</label>
+                <input type="file" id="logo-input" accept="image/*" class="form-control">
+            </div>
+
+            <button class="btn btn-primary px-2 py-1 rounded shadow d-flex align-items-center gap-2"
+                onclick="guardarLogo()">
+                Guardar Logo
+            </button>
+            <img id="logo-preview" style="display:block; margin:0 auto; max-height:100px;" />
+        </div>
+
 
         <section class="container py-5">
             <h1>Carga de Productos de <span id="nombre-marca">FirstP</span></h1>
