@@ -304,16 +304,43 @@
 const API_URL = "https://firstp-api.onrender.com/api";
 const contenedor = document.getElementById("cards-dashboard");
 
-// 🔄 Cargar productos
-async function cargarProductos() {
-    const res = await fetch(`${API_URL}/products`);
-    const productos = await res.json();
-    renderDashboard(productos);
+// 🔁 Función genérica para actualizar settings
+async function actualizarSettings(datos) {
+    try {
+        const res = await fetch(`${API_URL}/settings`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+        });
+
+        if (!res.ok) throw new Error("Falló la actualización");
+        return await res.json();
+    } catch (error) {
+        console.error("Error al actualizar:", error);
+    }
 }
 
 // 🎨 Renderizar dashboard
-function renderDashboard(productos) {
+function renderDashboard(productos, config) {
     contenedor.innerHTML = "";
+
+    // 🖼️ Logo como card destacada
+    if (config.logo) {
+        const logoCard = document.createElement("div");
+        logoCard.className = "col-md-4";
+        logoCard.innerHTML = `
+        <div class="card shadow h-100 border-primary">
+            <img src="${config.logo}" class="card-img-top" alt="Logo actual" />
+            <div class="card-body text-center">
+                <h5 class="card-title">Logo Institucional</h5>
+                <p class="card-text">Este es el logo guardado en la configuración.</p>
+            </div>
+        </div>
+        `;
+        contenedor.appendChild(logoCard);
+    }
+
+    // 🧃 Renderizar productos
     productos.forEach((p) => {
         const card = document.createElement("div");
         card.className = "col-md-4";
@@ -333,6 +360,19 @@ function renderDashboard(productos) {
     `;
         contenedor.appendChild(card);
     });
+}
+
+// 🌟 Cargar productos + configuración
+async function cargarProductos() {
+    const [resProd, resConfig] = await Promise.all([
+        fetch(`${API_URL}/products`),
+        fetch(`${API_URL}/settings`)
+    ]);
+
+    const productos = await resProd.json();
+    const config = await resConfig.json();
+
+    renderDashboard(productos, config);
 }
 
 // 📦 Crear botón agregar
@@ -474,22 +514,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// 🔁 Función genérica para actualizar settings
-async function actualizarSettings(datos) {
-    try {
-        const res = await fetch(`${API_URL}/settings`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos)
-        });
-
-        if (!res.ok) throw new Error("Falló la actualización");
-        return await res.json();
-    } catch (error) {
-        console.error("Error al actualizar:", error);
-    }
-}
-
 // 🎨 Guardar tema
 document.getElementById("save-theme").addEventListener("click", async () => {
     const theme = document.getElementById("theme-selector").value;
@@ -506,7 +530,7 @@ document.getElementById("save-theme").addEventListener("click", async () => {
 });
 
 // 🏷️ Guardar marca
-async function guardarMarca() {
+document.getElementById("save-marca").addEventListener("click", async () => {
     const marca = document.getElementById("theme-input").value;
     if (!marca.trim()) {
         Swal.fire("Campo vacío", "Ingresá un nombre", "warning");
@@ -522,10 +546,10 @@ async function guardarMarca() {
     } else {
         Swal.fire("Error", "No se pudo actualizar la marca", "error");
     }
-}
+});
 
 // 🖼️ Guardar logo
-async function guardarLogo() {
+document.getElementById("save-logo").addEventListener("click", async () => {
     const input = document.getElementById("logo-input");
     const file = input.files[0];
 
@@ -562,4 +586,4 @@ async function guardarLogo() {
         }
     };
     reader.readAsDataURL(file);
-}
+});
