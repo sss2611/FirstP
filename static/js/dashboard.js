@@ -317,15 +317,20 @@ async function renderDashboard() {
             card.className = "col-md-4";
             card.innerHTML = `
         <div class="card shadow h-100">
-          <img src="${p.imagen || "placeholder.jpg"}" class="card-img-top" alt="${p.nombre}" />
-          <div class="card-body">
+            <img src="${p.imagen || "placeholder.jpg"}" class="card-img-top" alt="${p.nombre}" />
+            <div class="card-body">
             <h5 class="card-title">${p.nombre}</h5>
             <p class="card-text">${p.descripcion}</p>
             <p><strong>Precio:</strong> $${p.precio}</p>
+            <p><strong>Publicado:</strong> ${p.publicado ? "✅" : "❌"}</p>
+            <button class="btn btn-primary editar" data-id="${p._id}">Editar</button>
+            <button class="btn btn-secondary publicar" data-id="${p._id}">
+                ${p.publicado ? "Ocultar" : "Publicar"}
+            </button>
             <button class="btn btn-danger eliminar" data-id="${p._id}">Eliminar</button>
-          </div>
+            </div>
         </div>
-      `;
+        `;
             contenedor.appendChild(card);
         });
 
@@ -340,12 +345,9 @@ async function agregarProducto(producto) {
     try {
         const res = await fetch("https://firstp-api.onrender.com/api/products", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(producto)
         });
-
         const nuevo = await res.json();
         console.log("Producto guardado en MongoDB:", nuevo);
         renderDashboard();
@@ -355,13 +357,19 @@ async function agregarProducto(producto) {
     }
 }
 
-// ➕ Crear botón para agregar
-function crearBotonAgregar() {
-    const btn = document.createElement("button");
-    btn.id = "btn-nuevo";
-    btn.textContent = "➕ Agregar producto";
-    btn.className = "btn btn-success";
-    document.getElementById("boton-agregar").appendChild(btn);
+// ✏️ Editar producto
+async function editarProducto(id, cambios) {
+    try {
+        await fetch(`https://firstp-api.onrender.com/api/products/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cambios)
+        });
+        renderDashboard();
+    } catch (err) {
+        console.error("Error al editar:", err);
+        Swal.fire("Error", "No se pudo editar el producto", "error");
+    }
 }
 
 // 🗑️ Eliminar producto
@@ -377,8 +385,17 @@ async function eliminarProducto(id) {
     }
 }
 
-// 🧠 Eventos
-document.addEventListener("click", (e) => {
+// ➕ Crear botón para agregar
+function crearBotonAgregar() {
+    const btn = document.createElement("button");
+    btn.id = "btn-nuevo";
+    btn.textContent = "➕ Agregar producto";
+    btn.className = "btn btn-success";
+    document.getElementById("boton-agregar").appendChild(btn);
+}
+
+// 🧠 Eventos globales
+document.addEventListener("click", async (e) => {
     const id = e.target.dataset.id;
 
     if (e.target.classList.contains("eliminar")) {
@@ -388,21 +405,55 @@ document.addEventListener("click", (e) => {
             confirmButtonText: "Sí",
             cancelButtonText: "No"
         }).then((r) => {
+            if (r.isConfirmed) eliminarProducto(id);
+        });
+    }
+
+    if (e.target.classList.contains("editar")) {
+        const res = await fetch(`https://firstp-api.onrender.com/api/products/${id}`);
+        const producto = await res.json();
+
+        Swal.fire({
+            title: "Editar producto",
+            html: `
+                <input id="edit-nombre" class="swal2-input" value="${producto.nombre}" />
+                <input id="edit-desc" class="swal2-input" value="${producto.descripcion}" />
+                <input id="edit-precio" class="swal2-input" type="number" value="${producto.precio}" />
+            `,
+            confirmButtonText: "Guardar",
+            focusConfirm: false,
+            preConfirm: () => {
+                const nombre = document.getElementById("edit-nombre").value;
+                const descripcion = document.getElementById("edit-desc").value;
+                const precio = parseFloat(document.getElementById("edit-precio").value);
+
+                if (!nombre || !descripcion || isNaN(precio)) {
+                    Swal.showValidationMessage("Todos los campos son obligatorios");
+                    return false;
+                }
+                return { nombre, descripcion, precio };
+            }
+        }).then((r) => {
             if (r.isConfirmed) {
-                eliminarProducto(id);
+                editarProducto(id, r.value);
             }
         });
+    }
+
+    if (e.target.classList.contains("publicar")) {
+        const nuevoEstado = e.target.textContent === "Publicar";
+        await editarProducto(id, { publicado: nuevoEstado });
     }
 
     if (e.target.id === "btn-nuevo") {
         Swal.fire({
             title: "Agregar nuevo producto",
             html: `
-        <input id="nuevo-nombre" class="swal2-input" placeholder="Nombre" />
-        <input id="nuevo-desc" class="swal2-input" placeholder="Descripción" />
-        <input id="nuevo-precio" class="swal2-input" type="number" placeholder="Precio" />
-        <input id="nuevo-img" class="swal2-file" type="file" accept="image/*" />
-      `,
+                <input id="nuevo-nombre" class="swal2-input" placeholder="Nombre" />
+                <input id="nuevo-desc" class="swal2-input" placeholder="Descripción" />
+                <input id="nuevo-precio" class="swal2-input" type="number" placeholder="Precio" />
+                <input id="nuevo-img" class="swal2-file" type="file" accept="image/*" />
+            `,
             confirmButtonText: "Agregar",
             focusConfirm: false,
             preConfirm: () => {
@@ -426,14 +477,14 @@ document.addEventListener("click", (e) => {
                                 descripcion,
                                 precio,
                                 imagen: reader.result,
-                                publicado: true // 👈 Este es el campo que faltaba
+                                publicado: true
                             });
                         };
                         reader.readAsDataURL(archivo);
                     });
                 }
 
-                return { nombre, descripcion, precio };
+                return { nombre, descripcion, precio, publicado: true };
             }
         }).then((r) => {
             if (r.isConfirmed) {
@@ -443,9 +494,10 @@ document.addEventListener("click", (e) => {
     }
 });
 
-// ⏱️ Inicializar
+// 🚀 Inicializar
 document.addEventListener("DOMContentLoaded", () => {
     crearBotonAgregar();
     renderDashboard();
 });
+
 // HASTA AQUI -----------------------------------------------------
