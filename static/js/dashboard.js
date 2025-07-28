@@ -448,102 +448,118 @@ document.addEventListener("DOMContentLoaded", async () => {
     crearBotonAgregar();
     cargarProductos();
 
-    // 🖼️ Cargar logo y marca
-    const res = await fetch(`${API_URL}/settings`);
-    const config = await res.json();
+    try {
+        const res = await fetch(`${API_URL}/settings`);
+        if (!res.ok) throw new Error("Error al obtener configuración");
 
-    // Marca
-    const lugaresMarca = document.querySelectorAll("#nombre-marca");
-    lugaresMarca.forEach(el => el.textContent = config.marca || "Marca");
+        const config = await res.json();
 
-    // Tema
-    const themeLink = document.querySelector("link[href*='bootswatch']");
-    const themeSelector = document.getElementById("theme-selector");
-    if (config.theme) {
-        themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${config.theme}/bootstrap.min.css`;
-        themeSelector.value = config.theme;
+        // Marca
+        const lugaresMarca = document.querySelectorAll("#nombre-marca");
+        lugaresMarca.forEach(el => el.textContent = config.marca || "Marca");
+
+        // Tema
+        const themeLink = document.querySelector("link[href*='bootswatch']");
+        const themeSelector = document.getElementById("theme-selector");
+        if (config.theme) {
+            themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${config.theme}/bootstrap.min.css`;
+            themeSelector.value = config.theme;
+        }
+
+        // Logo
+        const logo = document.getElementById("logo-preview");
+        if (config.logo) logo.src = config.logo;
+    } catch (error) {
+        console.error("Error al cargar configuración:", error);
     }
-
-    // Logo
-    const logo = document.getElementById("logo-preview");
-    if (config.logo) logo.src = config.logo;
 });
+
+// 🔁 Función genérica para actualizar settings
+async function actualizarSettings(datos) {
+    try {
+        const res = await fetch(`${API_URL}/settings`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+        });
+
+        if (!res.ok) throw new Error("Falló la actualización");
+        return await res.json();
+    } catch (error) {
+        console.error("Error al actualizar:", error);
+    }
+}
 
 // 🎨 Guardar tema
-document.getElementById("save-theme").addEventListener("click", () => {
+document.getElementById("save-theme").addEventListener("click", async () => {
     const theme = document.getElementById("theme-selector").value;
-    const themeLink = document.querySelector("link[href*='bootswatch']");
-    themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${theme}/bootstrap.min.css`;
+    document.querySelector("link[href*='bootswatch']").href = 
+        `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${theme}/bootstrap.min.css`;
 
-    fetch(`${API_URL}/settings`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ theme })
-    });
+    const resultado = await actualizarSettings({ theme });
 
-    Swal.fire("Guardado", `Tema "${theme}" actualizado`, "success");
+    if (resultado) {
+        Swal.fire("Guardado", `Tema "${theme}" actualizado`, "success");
+    } else {
+        Swal.fire("Error", "No se pudo guardar el tema", "error");
+    }
 });
 
-// 🏷️ Guardar nombre de marca
-function guardarMarca() {
+// 🏷️ Guardar marca
+async function guardarMarca() {
     const marca = document.getElementById("theme-input").value;
     if (!marca.trim()) {
         Swal.fire("Campo vacío", "Ingresá un nombre", "warning");
         return;
     }
 
-    fetch(`${API_URL}/settings`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ marca })
-    });
+    const resultado = await actualizarSettings({ marca });
 
-    const lugaresMarca = document.querySelectorAll("#nombre-marca");
-    lugaresMarca.forEach(el => el.textContent = marca);
-
-    Swal.fire("¡Marca actualizada!", `Usás "${marca}" como nombre`, "success");
+    if (resultado) {
+        document.querySelectorAll("#nombre-marca")
+            .forEach(el => el.textContent = marca);
+        Swal.fire("¡Marca actualizada!", `Usás "${marca}" como nombre`, "success");
+    } else {
+        Swal.fire("Error", "No se pudo actualizar la marca", "error");
+    }
 }
 
-// 🖼️ Guardar
-function guardarLogo() {
+// 🖼️ Guardar logo
+async function guardarLogo() {
     const input = document.getElementById("logo-input");
     const file = input.files[0];
 
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const imageUrl = e.target.result;
-
-            // Guardar en MongoDB
-            fetch(`${API_URL}/settings`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ logo: imageUrl })
-            });
-
-            // Mostrar vista previa
-            document.getElementById("logo-preview").src = imageUrl;
-
-            // Confirmación visual
-            Swal.fire({
-                title: "¡Logo guardado!",
-                text: "Tu logo se guardó correctamente.",
-                imageUrl: imageUrl,
-                imageAlt: "Vista previa del logo",
-                confirmButtonText: "Aceptar",
-                width: 400,
-                height: 50
-            }).then(() => {
-                location.reload();
-            });
-        };
-        reader.readAsDataURL(file);
-    } else {
+    if (!file) {
         Swal.fire({
             icon: "warning",
             title: "Sin imagen",
             text: "Subí una imagen antes de guardar.",
             confirmButtonText: "OK"
         });
+        return;
     }
+
+    const reader = new FileReader();
+    reader.onload = async function (e) {
+        const imageUrl = e.target.result;
+
+        const resultado = await actualizarSettings({ logo: imageUrl });
+
+        if (resultado) {
+            document.getElementById("logo-preview").src = imageUrl;
+
+            Swal.fire({
+                title: "¡Logo guardado!",
+                text: "Tu logo se guardó correctamente.",
+                imageUrl,
+                imageAlt: "Vista previa del logo",
+                confirmButtonText: "Aceptar",
+                width: 400,
+                height: 50
+            }).then(() => location.reload());
+        } else {
+            Swal.fire("Error", "No se pudo guardar el logo", "error");
+        }
+    };
+    reader.readAsDataURL(file);
 }
