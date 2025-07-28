@@ -527,6 +527,45 @@ async function renderDashboard() {
     }
 }
 
+// ➕ Crear botón para agregar
+function crearBotonAgregar() {
+    const btn = document.createElement("button");
+    btn.id = "btn-nuevo";
+    btn.textContent = "➕ Agregar producto";
+    btn.className = "btn btn-success";
+    document.getElementById("boton-agregar").appendChild(btn);
+}
+
+// ✅ Crear producto en MongoDB
+async function agregarProducto(producto) {
+    try {
+        const res = await fetch("https://firstp-api.onrender.com/api/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(producto)
+        });
+        const nuevo = await res.json();
+        console.log("Producto guardado en MongoDB:", nuevo);
+        renderDashboard();
+    } catch (err) {
+        console.error("Error al guardar producto:", err);
+        Swal.fire("Error", "No se pudo guardar el producto", "error");
+    }
+}
+
+// 🗑️ Eliminar producto
+async function eliminarProducto(id) {
+    try {
+        await fetch(`https://firstp-api.onrender.com/api/products/${id}`, {
+            method: "DELETE"
+        });
+        renderDashboard();
+    } catch (err) {
+        console.error("Error al eliminar:", err);
+        Swal.fire("Error", "No se pudo eliminar el producto", "error");
+    }
+}
+
 // ✏️ Editar producto
 async function editarProducto(id, cambios) {
     try {
@@ -542,12 +581,7 @@ async function editarProducto(id, cambios) {
     }
 }
 
-// ✅ Publicar/Ocultar producto
-async function cambiarEstadoPublicacion(id, publicado) {
-    await editarProducto(id, { publicado });
-}
-
-// 🧠 Eventos
+// 🧠 Manejador de eventos
 document.addEventListener("click", async (e) => {
     const id = e.target.dataset.id;
 
@@ -564,7 +598,7 @@ document.addEventListener("click", async (e) => {
 
     if (e.target.classList.contains("publicar")) {
         const publicado = e.target.textContent === "Publicar";
-        await cambiarEstadoPublicacion(id, publicado);
+        await editarProducto(id, { publicado });
     }
 
     if (e.target.classList.contains("editar")) {
@@ -598,11 +632,55 @@ document.addEventListener("click", async (e) => {
     }
 
     if (e.target.id === "btn-nuevo") {
-        // (tu lógica actual de agregar producto acá)
+        Swal.fire({
+            title: "Agregar nuevo producto",
+            html: `
+        <input id="nuevo-nombre" class="swal2-input" placeholder="Nombre" />
+        <input id="nuevo-desc" class="swal2-input" placeholder="Descripción" />
+        <input id="nuevo-precio" class="swal2-input" type="number" placeholder="Precio" />
+        <input id="nuevo-img" class="swal2-file" type="file" accept="image/*" />
+      `,
+            confirmButtonText: "Agregar",
+            focusConfirm: false,
+            preConfirm: () => {
+                const nombre = document.getElementById("nuevo-nombre").value;
+                const descripcion = document.getElementById("nuevo-desc").value;
+                const precio = parseFloat(document.getElementById("nuevo-precio").value);
+                const fileInput = document.getElementById("nuevo-img");
+                const archivo = fileInput.files[0];
+
+                if (!nombre || !descripcion || isNaN(precio)) {
+                    Swal.showValidationMessage("Todos los campos son obligatorios");
+                    return false;
+                }
+
+                if (archivo) {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            resolve({
+                                nombre,
+                                descripcion,
+                                precio,
+                                imagen: reader.result,
+                                publicado: true
+                            });
+                        };
+                        reader.readAsDataURL(archivo);
+                    });
+                }
+
+                return { nombre, descripcion, precio, publicado: true };
+            }
+        }).then((r) => {
+            if (r.isConfirmed) {
+                agregarProducto(r.value);
+            }
+        });
     }
 });
 
-// 🛫 Inicializar dashboard
+// 🚀 Inicializar
 document.addEventListener("DOMContentLoaded", () => {
     crearBotonAgregar();
     renderDashboard();
