@@ -1,13 +1,14 @@
 const contenedor = document.querySelector(".productos");
-const productos = JSON.parse(localStorage.getItem("productosFirstp")) || [];
 
-function renderProductos() {
+async function renderProductos() {
   contenedor.innerHTML = "";
 
-  productos
-    .filter(p => p.publicado)
-    .forEach((p) => {
-      const inputId = `cantidad-${p.id}`;
+  try {
+    const res = await fetch("https://firstp-api.onrender.com/api/products");
+    const productos = await res.json();
+
+    productos.forEach((p) => {
+      const inputId = `cantidad-${p._id}`;
       const card = document.createElement("div");
       card.className = "col";
       card.innerHTML = `
@@ -22,7 +23,7 @@ function renderProductos() {
               <input type="number" id="${inputId}" min="0" value="0" class="form-control" />
             </div>
             <button class="btn btn-success mt-3 agregar-carrito"
-              data-id="producto-${p.id}"
+              data-id="producto-${p._id}"
               data-producto="${p.nombre}"
               data-precio="${p.precio}"
               data-input="${inputId}">
@@ -33,6 +34,11 @@ function renderProductos() {
       `;
       contenedor.appendChild(card);
     });
+
+  } catch (err) {
+    console.error("Error al cargar productos:", err);
+    contenedor.innerHTML = `<p class="text-danger text-center">No se pudieron cargar los productos.</p>`;
+  }
 }
 
 document.addEventListener("DOMContentLoaded", renderProductos);
