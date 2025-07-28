@@ -300,92 +300,42 @@
 //     }
 // }
 
-// --------------------------------------------------------------------
-// MONGO FUNCIONANDO 
+// ----------------------------------------------------------------
+const API_URL = "https://firstp-api.onrender.com/api";
 const contenedor = document.getElementById("cards-dashboard");
 
-// 🔄 Renderizar productos desde MongoDB
-async function renderDashboard() {
+// 🔄 Cargar productos
+async function cargarProductos() {
+    const res = await fetch(`${API_URL}/products`);
+    const productos = await res.json();
+    renderDashboard(productos);
+}
+
+// 🎨 Renderizar dashboard
+function renderDashboard(productos) {
     contenedor.innerHTML = "";
-
-    try {
-        const res = await fetch("https://firstp-api.onrender.com/api/products");
-        const productos = await res.json();
-
-        productos.forEach((p) => {
-            const card = document.createElement("div");
-            card.className = "col-md-4";
-            card.innerHTML = `
-        <div class="card shadow h-100">
-            <img src="${p.imagen || "placeholder.jpg"}" class="card-img-top" alt="${p.nombre}" />
-            <div class="card-body">
-            <h5 class="card-title">${p.nombre}</h5>
-            <p class="card-text">${p.descripcion}</p>
-            <p><strong>Precio:</strong> $${p.precio}</p>
-            <p><strong>Publicado:</strong> ${p.publicado ? "✅" : "❌"}</p>
-            <button class="btn btn-primary editar" data-id="${p._id}">Editar</button>
-            <button class="btn btn-secondary publicar" data-id="${p._id}">
-                ${p.publicado ? "Ocultar" : "Publicar"}
-            </button>
-            <button class="btn btn-danger eliminar" data-id="${p._id}">Eliminar</button>
-            </div>
+    productos.forEach((p) => {
+        const card = document.createElement("div");
+        card.className = "col-md-4";
+        card.innerHTML = `
+      <div class="card shadow h-100">
+        <img src="${p.imagen || "https://via.placeholder.com/300"}" class="card-img-top" alt="${p.nombre}" />
+        <div class="card-body">
+          <h5 class="card-title">${p.nombre}</h5>
+          <p class="card-text">${p.descripcion}</p>
+          <p><strong>Precio:</strong> $${p.precio}</p>
+          <p><strong>Publicado:</strong> ${p.publicado ? "✅" : "❌"}</p>
+          <button class="btn btn-primary editar" data-id="${p._id}">Editar</button>
+          <button class="btn btn-danger eliminar" data-id="${p._id}">Eliminar</button>
+          <button class="btn btn-secondary publicar" data-id="${p._id}">${p.publicado ? "Ocultar" : "Publicar"}</button>
         </div>
-        `;
-            contenedor.appendChild(card);
-        });
-
-    } catch (error) {
-        console.error("Error al cargar productos:", error);
-        contenedor.innerHTML = `<p class="text-center text-danger">No se pudo cargar el dashboard</p>`;
-    }
+      </div>
+    `;
+        contenedor.appendChild(card);
+    });
 }
 
-// 🆕 Agregar producto a MongoDB
-async function agregarProducto(producto) {
-    try {
-        const res = await fetch("https://firstp-api.onrender.com/api/products", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(producto)
-        });
-        const nuevo = await res.json();
-        console.log("Producto guardado en MongoDB:", nuevo);
-        renderDashboard();
-    } catch (err) {
-        console.error("Error al guardar producto en MongoDB:", err);
-        Swal.fire("Error", "No se pudo guardar el producto", "error");
-    }
-}
-
-// ✏️ Editar producto
-async function editarProducto(id, cambios) {
-    try {
-        await fetch(`https://firstp-api.onrender.com/api/products/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(cambios)
-        });
-        renderDashboard();
-    } catch (err) {
-        console.error("Error al editar:", err);
-        Swal.fire("Error", "No se pudo editar el producto", "error");
-    }
-}
-
-// 🗑️ Eliminar producto
-async function eliminarProducto(id) {
-    try {
-        await fetch(`https://firstp-api.onrender.com/api/products/${id}`, {
-            method: "DELETE"
-        });
-        renderDashboard();
-    } catch (err) {
-        console.error("Error al eliminar:", err);
-        Swal.fire("Error", "No se pudo eliminar el producto", "error");
-    }
-}
-
-// ➕ Crear botón para agregar
+// 📦 Crear botón agregar
 function crearBotonAgregar() {
     const btn = document.createElement("button");
     btn.id = "btn-nuevo";
@@ -394,110 +344,206 @@ function crearBotonAgregar() {
     document.getElementById("boton-agregar").appendChild(btn);
 }
 
-// 🧠 Eventos globales
+// ✏️ Manejador de eventos
 document.addEventListener("click", async (e) => {
     const id = e.target.dataset.id;
 
     if (e.target.classList.contains("eliminar")) {
-        Swal.fire({
-            title: "¿Eliminar este producto?",
-            showCancelButton: true,
-            confirmButtonText: "Sí",
-            cancelButtonText: "No"
-        }).then((r) => {
-            if (r.isConfirmed) eliminarProducto(id);
+        Swal.fire({ title: "¿Eliminar?", showCancelButton: true }).then(r => {
+            if (r.isConfirmed) fetch(`${API_URL}/products/${id}`, { method: "DELETE" }).then(() => cargarProductos());
         });
     }
 
     if (e.target.classList.contains("editar")) {
-        const res = await fetch(`https://firstp-api.onrender.com/api/products/${id}`);
+        const res = await fetch(`${API_URL}/products/${id}`);
         const producto = await res.json();
 
         Swal.fire({
             title: "Editar producto",
             html: `
-                <input id="edit-nombre" class="swal2-input" value="${producto.nombre}" />
-                <input id="edit-desc" class="swal2-input" value="${producto.descripcion}" />
-                <input id="edit-precio" class="swal2-input" type="number" value="${producto.precio}" />
-            `,
+        <input id="edit-nombre" class="swal2-input" value="${producto.nombre}" />
+        <input id="edit-desc" class="swal2-input" value="${producto.descripcion}" />
+        <input id="edit-precio" class="swal2-input" type="number" value="${producto.precio}" />
+        <input id="edit-imagen" class="swal2-file" type="file" accept="image/*" />
+      `,
             confirmButtonText: "Guardar",
-            focusConfirm: false,
             preConfirm: () => {
                 const nombre = document.getElementById("edit-nombre").value;
                 const descripcion = document.getElementById("edit-desc").value;
                 const precio = parseFloat(document.getElementById("edit-precio").value);
+                const file = document.getElementById("edit-imagen").files[0];
 
                 if (!nombre || !descripcion || isNaN(precio)) {
                     Swal.showValidationMessage("Todos los campos son obligatorios");
                     return false;
                 }
+
+                if (file) {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve({ nombre, descripcion, precio, imagen: reader.result });
+                        reader.readAsDataURL(file);
+                    });
+                }
+
                 return { nombre, descripcion, precio };
             }
-        }).then((r) => {
-            if (r.isConfirmed) {
-                editarProducto(id, r.value);
-            }
+        }).then(r => {
+            if (r.isConfirmed) fetch(`${API_URL}/products/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(r.value)
+            }).then(() => cargarProductos());
         });
     }
 
     if (e.target.classList.contains("publicar")) {
         const nuevoEstado = e.target.textContent === "Publicar";
-        await editarProducto(id, { publicado: nuevoEstado });
+        fetch(`${API_URL}/products/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ publicado: nuevoEstado })
+        }).then(() => cargarProductos());
     }
 
     if (e.target.id === "btn-nuevo") {
         Swal.fire({
-            title: "Agregar nuevo producto",
+            title: "Agregar producto",
             html: `
-                <input id="nuevo-nombre" class="swal2-input" placeholder="Nombre" />
-                <input id="nuevo-desc" class="swal2-input" placeholder="Descripción" />
-                <input id="nuevo-precio" class="swal2-input" type="number" placeholder="Precio" />
-                <input id="nuevo-img" class="swal2-file" type="file" accept="image/*" />
-            `,
+        <input id="nuevo-nombre" class="swal2-input" placeholder="Nombre" />
+        <input id="nuevo-desc" class="swal2-input" placeholder="Descripción" />
+        <input id="nuevo-precio" class="swal2-input" type="number" placeholder="Precio" />
+        <input id="nuevo-img" class="swal2-file" type="file" accept="image/*" />
+      `,
             confirmButtonText: "Agregar",
-            focusConfirm: false,
             preConfirm: () => {
                 const nombre = document.getElementById("nuevo-nombre").value;
                 const descripcion = document.getElementById("nuevo-desc").value;
                 const precio = parseFloat(document.getElementById("nuevo-precio").value);
-                const fileInput = document.getElementById("nuevo-img");
-                const archivo = fileInput.files[0];
+                const file = document.getElementById("nuevo-img").files[0];
 
-                if (!nombre || !descripcion || isNaN(precio)) {
+                if (!nombre || !descripcion || isNaN(precio) || !file) {
                     Swal.showValidationMessage("Todos los campos son obligatorios");
                     return false;
                 }
 
-                if (archivo) {
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                            resolve({
-                                nombre,
-                                descripcion,
-                                precio,
-                                imagen: reader.result,
-                                publicado: true
-                            });
-                        };
-                        reader.readAsDataURL(archivo);
-                    });
-                }
-
-                return { nombre, descripcion, precio, publicado: true };
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve({ nombre, descripcion, precio, imagen: reader.result, publicado: false });
+                    reader.readAsDataURL(file);
+                });
             }
-        }).then((r) => {
-            if (r.isConfirmed) {
-                agregarProducto(r.value);
-            }
+        }).then(r => {
+            if (r.isConfirmed) fetch(`${API_URL}/products`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(r.value)
+            }).then(() => cargarProductos());
         });
     }
 });
 
-// 🚀 Inicializar
-document.addEventListener("DOMContentLoaded", () => {
+// 🌟 Configuración inicial del dashboard
+document.addEventListener("DOMContentLoaded", async () => {
     crearBotonAgregar();
-    renderDashboard();
+    cargarProductos();
+
+    // 🖼️ Cargar logo y marca
+    const res = await fetch(`${API_URL}/settings`);
+    const config = await res.json();
+
+    // Marca
+    const lugaresMarca = document.querySelectorAll("#nombre-marca");
+    lugaresMarca.forEach(el => el.textContent = config.marca || "Marca");
+
+    // Tema
+    const themeLink = document.querySelector("link[href*='bootswatch']");
+    const themeSelector = document.getElementById("theme-selector");
+    if (config.theme) {
+        themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${config.theme}/bootstrap.min.css`;
+        themeSelector.value = config.theme;
+    }
+
+    // Logo
+    const logo = document.getElementById("logo-preview");
+    if (config.logo) logo.src = config.logo;
 });
 
-// HASTA AQUI -----------------------------------------------------
+// 🎨 Guardar tema
+document.getElementById("save-theme").addEventListener("click", () => {
+    const theme = document.getElementById("theme-selector").value;
+    const themeLink = document.querySelector("link[href*='bootswatch']");
+    themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${theme}/bootstrap.min.css`;
+
+    fetch(`${API_URL}/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ theme })
+    });
+
+    Swal.fire("Guardado", `Tema "${theme}" actualizado`, "success");
+});
+
+// 🏷️ Guardar nombre de marca
+function guardarMarca() {
+    const marca = document.getElementById("theme-input").value;
+    if (!marca.trim()) {
+        Swal.fire("Campo vacío", "Ingresá un nombre", "warning");
+        return;
+    }
+
+    fetch(`${API_URL}/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ marca })
+    });
+
+    const lugaresMarca = document.querySelectorAll("#nombre-marca");
+    lugaresMarca.forEach(el => el.textContent = marca);
+
+    Swal.fire("¡Marca actualizada!", `Usás "${marca}" como nombre`, "success");
+}
+
+// 🖼️ Guardar
+function guardarLogo() {
+    const input = document.getElementById("logo-input");
+    const file = input.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const imageUrl = e.target.result;
+
+            // Guardar en MongoDB
+            fetch(`${API_URL}/settings`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ logo: imageUrl })
+            });
+
+            // Mostrar vista previa
+            document.getElementById("logo-preview").src = imageUrl;
+
+            // Confirmación visual
+            Swal.fire({
+                title: "¡Logo guardado!",
+                text: "Tu logo se guardó correctamente.",
+                imageUrl: imageUrl,
+                imageAlt: "Vista previa del logo",
+                confirmButtonText: "Aceptar",
+                width: 400,
+                height: 50
+            }).then(() => {
+                location.reload();
+            });
+        };
+        reader.readAsDataURL(file);
+    } else {
+        Swal.fire({
+            icon: "warning",
+            title: "Sin imagen",
+            text: "Subí una imagen antes de guardar.",
+            confirmButtonText: "OK"
+        });
+    }
+}
