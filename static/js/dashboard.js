@@ -106,7 +106,12 @@ function crearCardEditable({ nombre, descripcion, precio, imagenUrl }) {
         Swal.fire("Eliminado", "El producto fue removido", "success");
     });
 
-    card.querySelector(".btn-publicar").addEventListener("click", async () => {
+   card.querySelector(".btn-publicar").addEventListener("click", async () => {
+    const publicarBtn = card.querySelector(".btn-publicar");
+
+    // Evita repetición
+    if (publicarBtn.disabled || publicarBtn.dataset.publicado === "true") return;
+
     const nombre = card.querySelector(".nombre").value.trim();
     const descripcion = card.querySelector(".descripcion").value.trim();
     const precio = parseFloat(card.querySelector(".precio").value);
@@ -129,19 +134,17 @@ function crearCardEditable({ nombre, descripcion, precio, imagenUrl }) {
         });
 
         if (res.ok) {
-            Swal.fire("¡Publicado!", "El producto está visible en el sitio público.", "success");
+            // Solo actualiza el botón, sin mostrar SweetAlert
+            publicarBtn.disabled = true;
+            publicarBtn.dataset.publicado = "true";
+            publicarBtn.innerText = "Publicado";
+            publicarBtn.classList.remove("btn-outline-success");
+            publicarBtn.classList.add("btn-success");
 
-            // 🖌️ Indicador visual de publicación
-            const publicadoBadge = document.createElement("span");
-            publicadoBadge.textContent = "Publicado";
-            publicadoBadge.className = "badge bg-success ms-2";
-
-            card.querySelector(".btn-publicar").disabled = true;
-            card.querySelector(".btn-publicar").innerText = "Publicado";
-            card.querySelector(".btn-publicar").classList.remove("btn-outline-success");
-            card.querySelector(".btn-publicar").classList.add("btn-success");
-
-            card.querySelector(".card").prepend(publicadoBadge);
+            const badge = document.createElement("span");
+            badge.textContent = "Publicado";
+            badge.className = "badge bg-success ms-2";
+            card.querySelector(".card").prepend(badge);
         } else {
             const errorText = await res.text();
             throw new Error(`Error al publicar: ${errorText}`);
@@ -151,4 +154,5 @@ function crearCardEditable({ nombre, descripcion, precio, imagenUrl }) {
         Swal.fire("Error", "No se pudo publicar el producto", "error");
     }
 });
+
 }
