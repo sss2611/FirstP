@@ -1,126 +1,11 @@
 const API_URL = "https://firstp-api.onrender.com/api";
 
-// Al cargar el documento
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-nuevo-producto").addEventListener("click", mostrarFormularioProducto);
     cargarProductosExistentes();
 });
 
-// Cargar productos guardados en el backend
-async function cargarProductosExistentes() {
-    const cardsContainer = document.getElementById("cards-dashboard");
-
-    cardsContainer.innerHTML = `
-        <div class="text-center w-100">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2">Cargando productos...</p>
-        </div>
-    `;
-
-    try {
-        const res = await fetch(`${API_URL}/products`);
-        if (!res.ok) throw new Error("Error al obtener productos");
-        const productos = await res.json();
-
-        cardsContainer.innerHTML = "";
-
-        productos.forEach(producto => {
-            crearCardEditable({
-                nombre: producto.nombre,
-                descripcion: producto.descripcion,
-                precio: producto.precio,
-                imagenUrl: producto.imagen,
-                publicado: producto.publicado
-            });
-        });
-
-        if (productos.length === 0) {
-            cardsContainer.innerHTML = `<div class="text-center w-100"><p>No hay productos cargados.</p></div>`;
-        }
-    } catch (error) {
-        console.error("Error al cargar productos:", error.message);
-        mostrarError("No se pudieron cargar los productos.");
-    }
-}
-
-// Crear tarjeta editable para productos nuevos o existentes
-function crearCardEditable({ nombre, descripcion, precio, imagenUrl, publicado = false }) {
-    const cardsContainer = document.getElementById("cards-dashboard");
-
-    const card = document.createElement("div");
-    card.className = "col-md-4";
-
-    card.innerHTML = `
-        <div class="card shadow-sm p-2">
-            <img src="${imagenUrl}" class="card-img-top mb-2" alt="${nombre}">
-            <input type="text" class="form-control mb-2 nombre" value="${nombre}">
-            <textarea class="form-control mb-2 descripcion">${descripcion}</textarea>
-            <input type="number" class="form-control mb-2 precio" value="${precio}">
-            <div class="d-flex justify-content-between align-items-center mt-2">
-                ${publicado ? '<span class="badge bg-success">Publicado</span>' : ''}
-                <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-primary btn-editar">Editar</button>
-                    <button class="btn btn-sm btn-outline-success btn-publicar">Publicar</button>
-                    <button class="btn btn-sm btn-outline-danger btn-eliminar">Eliminar</button>
-                </div>
-            </div>
-        </div>
-    `;
-    cardsContainer.appendChild(card);
-
-    card.querySelector(".btn-editar").addEventListener("click", () => {
-        Swal.fire("Editá libremente", "Los campos son modificables en la tarjeta", "info");
-    });
-
-    card.querySelector(".btn-eliminar").addEventListener("click", () => {
-        card.remove();
-        Swal.fire("Eliminado", "El producto fue removido", "success");
-    });
-
-    card.querySelector(".btn-publicar").addEventListener("click", async () => {
-        const publicarBtn = card.querySelector(".btn-publicar");
-
-        if (publicarBtn.disabled || publicarBtn.dataset.publicado === "true") return;
-
-        const nombre = card.querySelector(".nombre").value.trim();
-        const descripcion = card.querySelector(".descripcion").value.trim();
-        const precio = parseFloat(card.querySelector(".precio").value);
-
-        const payload = {
-            nombre,
-            descripcion,
-            precio,
-            imagen: imagenUrl,
-            publicado: true
-        };
-
-        try {
-            const res = await fetch(`${API_URL}/products`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-                publicarBtn.disabled = true;
-                publicarBtn.dataset.publicado = "true";
-                publicarBtn.innerText = "Publicado";
-                publicarBtn.classList.remove("btn-outline-success");
-                publicarBtn.classList.add("btn-success");
-            } else {
-                const errorText = await res.text();
-                throw new Error(`Error al publicar: ${errorText}`);
-            }
-        } catch (error) {
-            console.error("Detalles del error:", error.message);
-            Swal.fire("Error", "No se pudo publicar el producto", "error");
-        }
-    });
-}
-
-// SweetAlert para nuevo producto
+// CREAR FORMULARIO
 function mostrarFormularioProducto() {
     Swal.fire({
         title: 'Nuevo Producto',
@@ -149,8 +34,8 @@ function mostrarFormularioProducto() {
     }).then(result => {
         if (result.isConfirmed) {
             const { nombre, descripcion, precio, imagen } = result.value;
-
             const reader = new FileReader();
+
             reader.onload = function (e) {
                 const imagenBase64 = e.target.result;
 
@@ -159,32 +44,23 @@ function mostrarFormularioProducto() {
                     descripcion,
                     precio,
                     imagen: imagenBase64,
-                    publicado: false
+                    publicado: false // 👈 Esto asegura que no se verá en index.html
                 };
 
                 fetch(`${API_URL}/products`, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 })
-                .then(res => {
-                    if (!res.ok) {
-                        return res.text().then(text => {
-                            throw new Error(`Error en la API: ${text}`);
-                        });
-                    }
-                    return res.json();
-                })
-                .then(() => {
-                    Swal.fire("¡Guardado!", "El producto fue guardado como borrador.", "success");
-                    crearCardEditable({ ...payload, imagenUrl: imagenBase64 });
-                })
-                .catch((error) => {
-                    console.error("Detalles del error:", error.message);
-                    Swal.fire("Error", "No se pudo guardar el producto. Verificá la consola para más detalles.", "error");
-                });
+                    .then(res => res.json())
+                    .then(() => {
+                        Swal.fire("¡Guardado!", "El producto fue guardado como borrador.", "success");
+                        cargarProductosExistentes(); // 👈 Esta línea aplica el filtro por ruta automáticamente
+                    })
+                    .catch((error) => {
+                        console.error("Error al guardar producto:", error.message);
+                        Swal.fire("Error", "No se pudo guardar el producto", "error");
+                    });
             };
 
             reader.readAsDataURL(imagen);
@@ -192,11 +68,250 @@ function mostrarFormularioProducto() {
     });
 }
 
-// Mostrar errores con estilo
-function mostrarError(mensaje) {
-    Swal.fire({
-        icon: 'error',
-        title: 'Ups...',
-        text: mensaje,
+// CREAR CARD
+function crearCardEditable({ id, nombre, descripcion, precio, imagenUrl, publicado }) {
+    const pathname = window.location.pathname;
+    const esIndex = pathname === "/" || pathname.endsWith("index.html");
+
+    // 👉 Mostrar solo si:
+    //    • estás en el index y el producto está publicado
+    //    • estás en dashboard y el producto está publicado o es borrador
+    if (esIndex && !publicado) return;
+
+    const card = document.createElement("div");
+    card.className = "card mb-3 shadow-sm position-relative";
+
+    card.innerHTML = `
+        <img src="${imagenUrl}" class="card-img-top" alt="${nombre}">
+        <div class="card-body">
+            <h5 class="card-title">${nombre}</h5>
+            <p class="card-text">${descripcion}</p>
+            <p class="card-text"><strong>$${precio}</strong></p>
+
+            ${esIndex
+                ? ""
+                : `
+                <div class="d-flex justify-content-between mt-3">
+                    <button class="btn btn-sm btn-info" onclick="editarProducto('${id}')">Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick="eliminarProducto('${id}')">Eliminar</button>
+                    <button 
+  class="btn btn-sm ${publicado ? 'btn-secondary' : 'btn-success'}"
+  onclick="${publicado ? `ocultarProducto('${id}')` : `publicarProducto('${id}')`}"
+>
+  <i class="fa-solid ${publicado ? 'fa-xmark text-danger' : 'fa-check text-light'}"></i>
+  ${publicado ? 'Ocultar' : 'Publicar'}
+</button>
+
+                </div>
+                `}
+        </div>
+    `;
+
+    // 👀 En el dashboard, si está como borrador, mostramos badge
+    if (!esIndex && !publicado) {
+        const badge = document.createElement("span");
+        badge.className = "badge bg-warning text-dark position-absolute top-0 end-0 m-2";
+        badge.textContent = "Borrador";
+        card.appendChild(badge);
+    }
+
+    return card;
+}
+
+// EDITAR PRODUCTO
+async function editarProducto(id) {
+    try {
+        const res = await fetch(`${API_URL}/products/${id}`);
+        if (!res.ok) throw new Error("No se pudo obtener el producto");
+        const producto = await res.json();
+
+        Swal.fire({
+            title: 'Editar Producto',
+            html: `
+                <input type="text" id="edit-nombre" class="swal2-input" value="${producto.nombre}" placeholder="Nombre">
+                <textarea id="edit-descripcion" class="swal2-textarea" placeholder="Descripción">${producto.descripcion}</textarea>
+                <input type="number" id="edit-precio" class="swal2-input" value="${producto.precio}" placeholder="Precio">
+                <input type="file" id="edit-imagen" class="swal2-file" accept="image/*">
+                <img src="${producto.imagen}" alt="Imagen actual" style="max-width: 100%; margin-top:10px;" />
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar cambios',
+            focusConfirm: false,
+            preConfirm: () => {
+                const nombre = document.getElementById("edit-nombre").value.trim();
+                const descripcion = document.getElementById("edit-descripcion").value.trim();
+                const precio = parseFloat(document.getElementById("edit-precio").value);
+                const imagenArchivo = document.getElementById("edit-imagen").files[0];
+
+                if (!nombre || !descripcion || isNaN(precio)) {
+                    Swal.showValidationMessage("Todos los campos son obligatorios y deben ser válidos");
+                    return false;
+                }
+
+                return { nombre, descripcion, precio, imagenArchivo };
+            }
+        }).then(result => {
+            if (result.isConfirmed) {
+                const { nombre, descripcion, precio, imagenArchivo } = result.value;
+
+                const actualizarProducto = (imagenBase64) => {
+                    const payload = {
+                        nombre,
+                        descripcion,
+                        precio,
+                        imagen: imagenBase64 || producto.imagen
+                    };
+
+                    fetch(`${API_URL}/products/${id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    })
+                        .then(res => {
+                            if (!res.ok) throw new Error("Error al actualizar");
+                            return res.json();
+                        })
+                        .then(() => {
+                            Swal.fire("¡Actualizado!", "El producto fue modificado.", "success");
+                            cargarProductosExistentes();
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire("Error", "No se pudo guardar el producto", "error");
+                        });
+                };
+
+                if (imagenArchivo) {
+                    const reader = new FileReader();
+                    reader.onload = e => actualizarProducto(e.target.result);
+                    reader.readAsDataURL(imagenArchivo);
+                } else {
+                    actualizarProducto(null);
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error("Error al editar producto:", err.message);
+        Swal.fire("Error", "No se pudo cargar el formulario de edición", "error");
+    }
+}
+
+// ELIMINAR PRODUCTO
+async function eliminarProducto(id) {
+    const confirmacion = await Swal.fire({
+        title: "¿Eliminar producto?",
+        text: "Esta acción no se puede deshacer.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
     });
+
+    if (confirmacion.isConfirmed) {
+        try {
+            const res = await fetch(`${API_URL}/products/${id}`, {
+                method: "DELETE"
+            });
+
+            if (!res.ok) {
+                const texto = await res.text();
+                throw new Error(`Error ${res.status}: ${texto}`);
+            }
+
+            // Eliminación visual de la card
+            const card = document.querySelector(`[onclick="editarProducto('${id}')"]`)?.closest(".card");
+            if (card) card.remove();
+
+            Swal.fire("Eliminado", "El producto fue eliminado correctamente.", "success");
+        } catch (error) {
+            console.error("Error al eliminar producto:", error.message);
+            Swal.fire("Error", `No se pudo eliminar el producto: ${error.message}`, "error");
+        }
+    }
+}
+
+// PUBLICAR
+function publicarProducto(id) {
+    fetch(`${API_URL}/products/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicado: true })
+    })
+        .then(res => res.json())
+        .then(() => {
+            Swal.fire("Publicado", "El producto fue publicado con éxito.", "success");
+            cargarProductosExistentes(); // Recarga cards actualizadas
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire("Error", "No se pudo publicar el producto.", "error");
+        });
+}
+
+function ocultarProducto(id) {
+    fetch(`${API_URL}/products/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicado: false })
+    })
+        .then(res => res.json())
+        .then(() => {
+            Swal.fire("Ocultado", "El producto ya no se muestra en la página principal.", "info");
+            cargarProductosExistentes();
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire("Error", "No se pudo ocultar el producto.", "error");
+        });
+}
+
+
+// CARGAR PRODUCTOS
+async function cargarProductosExistentes() {
+    const cardsContainer = document.getElementById("cards-dashboard") || document.querySelector(".productos");
+
+    cardsContainer.innerHTML = `
+        <div class="text-center w-100">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Cargando productos...</p>
+        </div>
+    `;
+
+    try {
+        const res = await fetch(`${API_URL}/products`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Error al obtener productos");
+        const productos = await res.json();
+
+        cardsContainer.innerHTML = "";
+        const fragment = document.createDocumentFragment();
+        const esIndex =
+            window.location.pathname === "/" || window.location.pathname.endsWith("index.html");
+
+        const productosFiltrados = esIndex ? productos.filter(p => p.publicado) : productos;
+
+        productosFiltrados.forEach(producto => {
+            const card = crearCardEditable({
+                id: producto._id,
+                nombre: producto.nombre,
+                descripcion: producto.descripcion,
+                precio: producto.precio,
+                imagenUrl: producto.imagen,
+                publicado: producto.publicado
+            });
+            if (card) fragment.appendChild(card);
+        });
+
+        cardsContainer.appendChild(fragment);
+
+        if (productosFiltrados.length === 0) {
+            cardsContainer.innerHTML = `<div class="text-center w-100"><p>No hay productos cargados.</p></div>`;
+        }
+
+    } catch (error) {
+        console.error("Error al cargar productos:", error.message);
+        mostrarError("No se pudieron cargar los productos.");
+    }
 }

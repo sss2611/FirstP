@@ -4,7 +4,24 @@
   margin: 0 auto 15px auto;
   clear: both;
 }
+
 #theme-box .theme-item {
+  padding: 10px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  margin-bottom: 5px;
+}
+
+#brand-box,
+#logo-box {
+  width: 300px;
+  float: right;
+  margin: 0 auto 15px auto;
+  clear: both;
+}
+
+#brand-box .brand-item,
+#logo-box .logo-item {
   padding: 10px;
   cursor: pointer;
   border: 1px solid #ccc;
