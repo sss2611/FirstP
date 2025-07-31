@@ -313,6 +313,13 @@ function aplicarLogoDesdeSession() {
     });
 }
 
+function resetSessionConfig() {
+    sessionStorage.removeItem("configLogo");
+    sessionStorage.removeItem("configMarca");
+    sessionStorage.removeItem("configTheme");
+}
+
+
 
 // document.addEventListener("DOMContentLoaded", () => {
 //     aplicarTemaGuardado();         // Tema desde backend
