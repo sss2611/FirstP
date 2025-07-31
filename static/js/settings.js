@@ -5,17 +5,6 @@ function aplicarTema(nombreTema) {
     }
 }
 
-// function aplicarTemaDesdeLocalStorage() {
-//     const temaLocal = localStorage.getItem("selectedTheme");
-//     if (temaLocal) {
-//         aplicarTema(temaLocal);
-//         document.body.classList.add(temaLocal);
-//         console.log("Tema aplicado:", temaLocal);
-//     } else {
-//         aplicarTemaGuardado();
-//     }
-// }
-
 async function aplicarTemaGuardado() {
     try {
         const res = await fetch("https://firstp-api.onrender.com/api/settings");
@@ -191,15 +180,6 @@ function obtenerLogoDelBackend() {
         })
         .catch(err => console.error("No se pudo obtener el logo:", err));
 }
-
-
-// document.addEventListener("DOMContentLoaded", () => {
-//     aplicarTemaDesdeLocalStorage();
-//     aplicarMarca("marca-display");
-//     aplicarMarca("nombre-marca");
-
-//     obtenerLogoDelBackend(); 
-// });
 
 function aplicarMarcaDesdeBackend() {
     fetch("https://firstp-api.onrender.com/api/settings")
