@@ -15,9 +15,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // ✅ Cargar navbar con correcciones
     loadComponent("navbar", "/components/navbar.html", () => {
         // Mostrar nombre personalizado si existe
-        const marca = localStorage.getItem("nombreMarca");
+        const marca = localStorage.getItem("nombreMarca") || localStorage.getItem("selectedMarca");
+
         const lugaresMarca = document.querySelectorAll("#nombre-marca");
-        if (marca) {
+        if (marca && lugaresMarca.length > 0) {
             lugaresMarca.forEach(el => {
                 el.textContent = marca;
             });

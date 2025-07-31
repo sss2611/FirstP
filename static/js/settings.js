@@ -1,3 +1,4 @@
+// TEMAS
 function aplicarTema(nombreTema) {
     const themeLink = document.getElementById("theme-link");
     themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${nombreTema}/bootstrap.min.css`;
@@ -99,9 +100,92 @@ window.addEventListener("DOMContentLoaded", aplicarTemaDesdeLocalStorage);
 
 document.addEventListener("DOMContentLoaded", () => {
     const savedTheme = localStorage.getItem("selectedTheme");
-    
+
     if (savedTheme) {
         document.body.classList.add(savedTheme);
         console.log("Tema aplicado:", savedTheme);
     }
 });
+
+// MARCA
+// MARCA
+function guardarMarca() {
+    const marca = document.getElementById("theme-input")?.value;
+    if (!marca) return;
+
+    localStorage.setItem("selectedMarca", marca);
+
+    fetch("https://firstp-api.onrender.com/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ marca })
+    })
+        .then(res => {
+            if (!res.ok) throw new Error("Error al guardar la marca");
+            return res.json();
+        })
+        .then(data => {
+            console.log("Marca guardada:", data);
+            Swal.fire({
+                icon: "success",
+                title: "Nombre guardado",
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.reload();
+            });
+        })
+        .catch(error => {
+            console.error("Error al guardar la marca:", error);
+            Swal.fire({ icon: "error", title: "No se pudo guardar la marca" });
+        });
+}
+
+function aplicarMarca(id = "marca-display") {
+    const marca = localStorage.getItem("selectedMarca");
+    const target = document.getElementById(id);
+
+    if (marca && target) {
+        target.textContent = marca;
+    } else {
+        fetch("https://firstp-api.onrender.com/api/settings")
+            .then(res => res.json())
+            .then(config => {
+                if (config?.marca && target) {
+                    target.textContent = config.marca;
+                }
+            })
+            .catch(err => console.error("No se pudo cargar la marca:", err));
+    }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    aplicarTemaGuardado();
+    aplicarMarca("marca-display");
+    aplicarMarca("nombre-marca"); // Para la navbar
+});
+
+// APLICAR MARCA EN EL NAVBAR 
+function aplicarMarcaEnNavbar() {
+    const marcaSpan = document.getElementById("nombre-marca");
+
+    if (!marcaSpan) {
+        console.warn("El elemento 'nombre-marca' no está disponible en el DOM aún.");
+        return;
+    }
+
+    const marcaLocal = localStorage.getItem("selectedMarca");
+    if (marcaLocal) {
+        marcaSpan.textContent = marcaLocal;
+        return;
+    }
+
+    fetch("https://firstp-api.onrender.com/api/settings")
+        .then(res => res.json())
+        .then(config => {
+            if (config?.marca) {
+                marcaSpan.textContent = config.marca;
+            }
+        })
+        .catch(err => console.error("Error al obtener marca del backend", err));
+}
