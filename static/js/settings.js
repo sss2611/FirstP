@@ -168,15 +168,16 @@ function guardarLogo() {
 }
 
 function aplicarLogo(id) {
-    const logoBase64 = localStorage.getItem("logoGuardado");
     const img = document.getElementById(id);
+    const logoBase64 = localStorage.getItem("logoGuardado") || "static/img/SS.png";
 
-    if (logoBase64 && img) {
+    if (img) {
         img.src = logoBase64;
         img.alt = "Logo dinámico";
+    } else {
+        console.warn(`No se encontró el elemento con ID ${id} para aplicar el logo`);
     }
 }
-
 function obtenerLogoDelBackend() {
     fetch("https://firstp-api.onrender.com/api/settings")
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener configuración"))
