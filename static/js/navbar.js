@@ -71,5 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ✅ Cargar footer normalmente
-    loadComponent("footer", "/components/footer.html");
+    loadComponent("footer", "/components/footer.html", () => {
+        aplicarLogo("footer-logo");
+    });
 });

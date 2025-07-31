@@ -1,28 +1,53 @@
 // TEMAS
 function aplicarTema(nombreTema) {
     const themeLink = document.getElementById("theme-link");
-    themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${nombreTema}/bootstrap.min.css`;
+    if (themeLink) {
+        themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${nombreTema}/bootstrap.min.css`;
+    }
 }
 
-document.getElementById("theme-selector").addEventListener("change", function () {
+function aplicarTemaDesdeLocalStorage() {
+    const temaLocal = localStorage.getItem("selectedTheme");
+    if (temaLocal) {
+        aplicarTema(temaLocal);
+        document.body.classList.add(temaLocal);
+        console.log("Tema aplicado:", temaLocal);
+    } else {
+        aplicarTemaGuardado();
+    }
+}
+
+async function aplicarTemaGuardado() {
+    try {
+        const res = await fetch("https://firstp-api.onrender.com/api/settings");
+        const config = await res.json();
+        if (config?.theme) {
+            aplicarTema(config.theme);
+            document.getElementById("theme-selector").value = config.theme;
+        }
+    } catch (error) {
+        console.error("No se pudo aplicar el tema guardado:", error);
+    }
+}
+
+document.getElementById("theme-selector")?.addEventListener("change", function () {
     const selectedTheme = this.value;
     aplicarTema(selectedTheme);
 });
+
 
 async function saveConfig() {
     const selectedTheme = document.getElementById("theme-selector").value;
     const spinner = document.getElementById("spinner");
     const buttonText = document.getElementById("button-text");
 
-    spinner.classList.remove("d-none");
-    buttonText.textContent = "Guardando...";
+    spinner?.classList.remove("d-none");
+    if (buttonText) buttonText.textContent = "Guardando...";
 
     try {
         const res = await fetch("https://firstp-api.onrender.com/api/settings", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ theme: selectedTheme })
         });
 
@@ -30,8 +55,6 @@ async function saveConfig() {
 
         const data = await res.json();
         console.log("Tema guardado:", data);
-
-        // 🌟 Guardar también en localStorage
         localStorage.setItem("selectedTheme", selectedTheme);
 
         Swal.fire({
@@ -42,73 +65,15 @@ async function saveConfig() {
         });
     } catch (error) {
         console.error("Error en la solicitud:", error);
-        Swal.fire({
-            icon: "error",
-            title: "Error al guardar la configuración"
-        });
+        Swal.fire({ icon: "error", title: "Error al guardar la configuración" });
     } finally {
-        spinner.classList.add("d-none");
-        buttonText.textContent = "Guardar configuración";
+        spinner?.classList.add("d-none");
+        if (buttonText) buttonText.textContent = "Guardar configuración";
     }
 }
-
-
-async function cargarTemaGuardado() {
-    try {
-        const res = await fetch("https://firstp-api.onrender.com/api/settings");
-        const config = await res.json();
-        if (config && config.theme) {
-            aplicarTema(config.theme);
-            document.getElementById("theme-selector").value = config.theme;
-        }
-    } catch (error) {
-        console.error("No se pudo cargar el tema guardado:", error);
-    }
-}
-
-window.addEventListener("DOMContentLoaded", cargarTemaGuardado);
-
-function aplicarTema(nombreTema) {
-    const themeLink = document.getElementById("theme-link");
-    themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${nombreTema}/bootstrap.min.css`;
-}
-
-async function aplicarTemaGuardado() {
-    try {
-        const res = await fetch("https://firstp-api.onrender.com/api/settings");
-        const config = await res.json();
-        if (config && config.theme) {
-            aplicarTema(config.theme);
-        }
-    } catch (error) {
-        console.error("No se pudo aplicar el tema guardado:", error);
-    }
-}
-
-window.addEventListener("DOMContentLoaded", aplicarTemaGuardado);
-
-function aplicarTemaDesdeLocalStorage() {
-    const temaLocal = localStorage.getItem("selectedTheme");
-    if (temaLocal) {
-        aplicarTema(temaLocal);
-    } else {
-        aplicarTemaGuardado(); // Si no hay tema en local, pedilo al backend
-    }
-}
-
-window.addEventListener("DOMContentLoaded", aplicarTemaDesdeLocalStorage);
-
-document.addEventListener("DOMContentLoaded", () => {
-    const savedTheme = localStorage.getItem("selectedTheme");
-
-    if (savedTheme) {
-        document.body.classList.add(savedTheme);
-        console.log("Tema aplicado:", savedTheme);
-    }
-});
 
 // MARCA
-// MARCA
+
 function guardarMarca() {
     const marca = document.getElementById("theme-input")?.value;
     if (!marca) return;
@@ -131,9 +96,7 @@ function guardarMarca() {
                 title: "Nombre guardado",
                 timer: 1500,
                 showConfirmButton: false
-            }).then(() => {
-                window.location.reload();
-            });
+            }).then(() => window.location.reload());
         })
         .catch(error => {
             console.error("Error al guardar la marca:", error);
@@ -141,7 +104,7 @@ function guardarMarca() {
         });
 }
 
-function aplicarMarca(id = "marca-display") {
+function aplicarMarca(id) {
     const marca = localStorage.getItem("selectedMarca");
     const target = document.getElementById(id);
 
@@ -159,33 +122,81 @@ function aplicarMarca(id = "marca-display") {
     }
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-    aplicarTemaGuardado();
-    aplicarMarca("marca-display");
-    aplicarMarca("nombre-marca"); // Para la navbar
-});
+//LOGO
 
-// APLICAR MARCA EN EL NAVBAR 
-function aplicarMarcaEnNavbar() {
-    const marcaSpan = document.getElementById("nombre-marca");
+function guardarLogo() {
+    const input = document.getElementById("logo-input");
+    const file = input?.files[0];
 
-    if (!marcaSpan) {
-        console.warn("El elemento 'nombre-marca' no está disponible en el DOM aún.");
+    if (!file) {
+        Swal.fire({ icon: "error", title: "Selecciona un logo primero" });
         return;
     }
 
-    const marcaLocal = localStorage.getItem("selectedMarca");
-    if (marcaLocal) {
-        marcaSpan.textContent = marcaLocal;
-        return;
-    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        const logoBase64 = reader.result;
 
+        // Vista previa
+        document.getElementById("logo-preview").src = logoBase64;
+
+        fetch("https://firstp-api.onrender.com/api/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ logo: logoBase64 })
+        })
+            .then(res => res.ok ? res.json() : Promise.reject("Error al guardar logo"))
+            .then(data => {
+                console.log("Logo guardado:", data);
+                localStorage.setItem("logoGuardado", logoBase64);
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Logo actualizado",
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({ icon: "error", title: "Falló el guardado" });
+            });
+    };
+
+    reader.readAsDataURL(file);
+}
+
+function aplicarLogo(id) {
+    const logoBase64 = localStorage.getItem("logoGuardado");
+    const img = document.getElementById(id);
+
+    if (logoBase64 && img) {
+        img.src = logoBase64;
+        img.alt = "Logo dinámico";
+    }
+}
+
+function obtenerLogoDelBackend() {
     fetch("https://firstp-api.onrender.com/api/settings")
-        .then(res => res.json())
-        .then(config => {
-            if (config?.marca) {
-                marcaSpan.textContent = config.marca;
+        .then(res => res.ok ? res.json() : Promise.reject("Error al obtener configuración"))
+        .then(data => {
+            if (data.logo) {
+                localStorage.setItem("logoGuardado", data.logo);
+                aplicarLogo("footer-logo");
+                aplicarLogo("navbar-logo");
+                aplicarLogo("logo-preview");
             }
         })
-        .catch(err => console.error("Error al obtener marca del backend", err));
+        .catch(err => console.error("No se pudo obtener el logo:", err));
 }
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    aplicarTemaDesdeLocalStorage();
+    aplicarMarca("marca-display");
+    aplicarMarca("nombre-marca");
+
+    obtenerLogoDelBackend(); // 🔄 Carga desde backend si el localStorage está vacío
+});
