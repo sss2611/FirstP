@@ -85,37 +85,95 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (result.isConfirmed) {
+        // Swal.fire({
+        //   title: "Datos del comprador",
+        //   html: `
+        //     <input id="nombre" class="swal2-input" placeholder="Nombre" />
+        //     <input id="apellido" class="swal2-input" placeholder="Apellido" />
+        //     <select id="ubicacion" class="swal2-input">
+        //       <option value="" disabled selected>Ubicación</option>
+        //       <option value="Santiago del Estero">Sgo</option>
+        //       <option value="La Banda">Banda</option>
+        //     </select>
+        //     <select id="pago" class="swal2-input">
+        //       <option value="" disabled selected>Forma de pago</option>
+        //       <option value="Transferencia">Transferencia</option>
+        //       <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+        //       <option value="Efectivo">Efectivo</option>
+        //     </select>
+        //   `,
+        //   confirmButtonText: "Confirmar",
+        //   focusConfirm: false,
+        //   preConfirm: () => {
+        //     const nombre = document.getElementById("nombre").value.trim();
+        //     const apellido = document.getElementById("apellido").value.trim();
+        //     const ubicacion = document.getElementById("ubicacion").value;
+        //     const pago = document.getElementById("pago").value;
+
+        //     if (!nombre || !apellido || !ubicacion || !pago) {
+        //       Swal.showValidationMessage("Todos los campos son obligatorios");
+        //       return false;
+        //     }
+
+        //     return { nombre, apellido, ubicacion, pago };
+        //   }
+        // }).then((datos) => {
+        //   if (!datos.isConfirmed) return;
+
+        //   const cliente = datos.value;
+        //   const mensaje = encodeURIComponent(
+        //     `👤 Pedido de ${cliente.nombre} ${cliente.apellido}\n` +
+        //     `📍 Ubicación: ${cliente.ubicacion}\n` +
+        //     `💳 Forma de pago: ${cliente.pago}\n` +
+        //     productosElegidos.map(p => `🛒 ${p.cantidad} x ${p.nombre} ($${p.precio * p.cantidad})`).join('\n') +
+        //     `\n\n💵 Total: $${productosElegidos.reduce((t, p) => t + p.precio * p.cantidad, 0)}`
+        //   );
+
+        //   Swal.fire({
+        //     title: "Pedido confirmado",
+        //     html: `
+        //       <p>Gracias por tu compra, <strong>${cliente.nombre}</strong> 💙</p>
+        //       <p>Te redireccionamos a nuestro WhatsApp para finalizar el pedido ✅</p>
+        //     `,
+        //     icon: "success",
+        //     timer: 3000,
+        //     showConfirmButton: false
+        //   }).then(() => {
+        //     window.location.href = `https://wa.me/543855075058?text=${mensaje}`;
+        //   });
         Swal.fire({
           title: "Datos del comprador",
           html: `
-            <input id="nombre" class="swal2-input" placeholder="Nombre" />
-            <input id="apellido" class="swal2-input" placeholder="Apellido" />
-            <select id="ubicacion" class="swal2-input">
-              <option value="" disabled selected>Ubicación</option>
-              <option value="Santiago del Estero">Sgo</option>
-              <option value="La Banda">Banda</option>
-            </select>
-            <select id="pago" class="swal2-input">
-              <option value="" disabled selected>Forma de pago</option>
-              <option value="Transferencia">Transferencia</option>
-              <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
-              <option value="Efectivo">Efectivo</option>
-            </select>
-          `,
+    <input id="nombre" class="swal2-input" placeholder="Nombre" />
+    <input id="apellido" class="swal2-input" placeholder="Apellido" />
+    <input id="whatsapp" class="swal2-input" placeholder="Número de WhatsApp (ej: 3855...)" />
+    <select id="ubicacion" class="swal2-input">
+      <option value="" disabled selected>Ubicación</option>
+      <option value="Santiago del Estero">Sgo</option>
+      <option value="La Banda">Banda</option>
+    </select>
+    <select id="pago" class="swal2-input">
+      <option value="" disabled selected>Forma de pago</option>
+      <option value="Transferencia">Transferencia</option>
+      <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+      <option value="Efectivo">Efectivo</option>
+    </select>
+  `,
           confirmButtonText: "Confirmar",
           focusConfirm: false,
           preConfirm: () => {
             const nombre = document.getElementById("nombre").value.trim();
             const apellido = document.getElementById("apellido").value.trim();
+            const whatsapp = document.getElementById("whatsapp").value.trim();
             const ubicacion = document.getElementById("ubicacion").value;
             const pago = document.getElementById("pago").value;
 
-            if (!nombre || !apellido || !ubicacion || !pago) {
+            if (!nombre || !apellido || !whatsapp || !ubicacion || !pago) {
               Swal.showValidationMessage("Todos los campos son obligatorios");
               return false;
             }
 
-            return { nombre, apellido, ubicacion, pago };
+            return { nombre, apellido, whatsapp, ubicacion, pago };
           }
         }).then((datos) => {
           if (!datos.isConfirmed) return;
@@ -132,16 +190,18 @@ document.addEventListener("DOMContentLoaded", () => {
           Swal.fire({
             title: "Pedido confirmado",
             html: `
-              <p>Gracias por tu compra, <strong>${cliente.nombre}</strong> 💙</p>
-              <p>Te redireccionamos a nuestro WhatsApp para finalizar el pedido ✅</p>
-            `,
+      <p>Gracias por tu compra, <strong>${cliente.nombre}</strong> 💙</p>
+      <p>Te redireccionamos a tu WhatsApp para finalizar el pedido ✅</p>
+    `,
             icon: "success",
             timer: 3000,
             showConfirmButton: false
           }).then(() => {
-            window.location.href = `https://wa.me/543855075058?text=${mensaje}`;
+            const numeroFinal = cliente.whatsapp.replace(/\D/g, ""); // quita cualquier símbolo
+            window.location.href = `https://wa.me/54${numeroFinal}?text=${mensaje}`;
           });
         });
+
 
         // Actualiza dinámicamente cantidades y totales
         productosElegidos.forEach((p, i) => {
