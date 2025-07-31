@@ -5,6 +5,23 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarProductosExistentes();
 });
 
+async function uploadToCloudinary(file) {
+    const url = 'https://api.cloudinary.com/v1_1/<tu-cloud-name>/image/upload';
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', '<tu-upload-preset>');
+
+    try {
+        const res = await fetch(url, { method: 'POST', body: formData });
+        const data = await res.json();
+        return data.secure_url;
+    } catch (err) {
+        console.error('Error al subir a Cloudinary:', err);
+        return null;
+    }
+}
+
+
 // CREAR FORMULARIO
 function mostrarFormularioProducto() {
     Swal.fire({
@@ -31,41 +48,43 @@ function mostrarFormularioProducto() {
 
             return { nombre, descripcion, precio, imagen };
         }
-    }).then(result => {
-        if (result.isConfirmed) {
-            const { nombre, descripcion, precio, imagen } = result.value;
-            const reader = new FileReader();
+    })
+        .then(result => {
+            if (result.isConfirmed) {
+                const { nombre, descripcion, precio, imagen } = result.value;
 
-            reader.onload = function (e) {
-                const imagenBase64 = e.target.result;
+                uploadToCloudinary(imagen).then(imagenUrl => {
+                    if (!imagenUrl) {
+                        Swal.fire("Error", "No se pudo subir la imagen", "error");
+                        return;
+                    }
 
-                const payload = {
-                    nombre,
-                    descripcion,
-                    precio,
-                    imagen: imagenBase64,
-                    publicado: false // 👈 Esto asegura que no se verá en index.html
-                };
+                    const payload = {
+                        nombre,
+                        descripcion,
+                        precio,
+                        imagen: imagenUrl,
+                        publicado: false
+                    };
 
-                fetch(`${API_URL}/products`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                })
-                    .then(res => res.json())
-                    .then(() => {
-                        Swal.fire("¡Guardado!", "El producto fue guardado como borrador.", "success");
-                        cargarProductosExistentes(); // 👈 Esta línea aplica el filtro por ruta automáticamente
+                    fetch(`${API_URL}/products`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
                     })
-                    .catch((error) => {
-                        console.error("Error al guardar producto:", error.message);
-                        Swal.fire("Error", "No se pudo guardar el producto", "error");
-                    });
-            };
+                        .then(res => res.json())
+                        .then(() => {
+                            Swal.fire("¡Guardado!", "El producto fue guardado como borrador.", "success");
+                            cargarProductosExistentes();
+                        })
+                        .catch((error) => {
+                            console.error("Error al guardar producto:", error.message);
+                            Swal.fire("Error", "No se pudo guardar el producto", "error");
+                        });
+                });
+            }
 
-            reader.readAsDataURL(imagen);
-        }
-    });
+        });
 }
 
 // CREAR CARD
@@ -89,8 +108,8 @@ function crearCardEditable({ id, nombre, descripcion, precio, imagenUrl, publica
             <p class="card-text"><strong>$${precio}</strong></p>
 
             ${esIndex
-                ? ""
-                : `
+            ? ""
+            : `
                 <div class="d-flex justify-content-between mt-3">
                     <button class="btn btn-sm btn-info" onclick="editarProducto('${id}')">Editar</button>
                     <button class="btn btn-sm btn-danger" onclick="eliminarProducto('${id}')">Eliminar</button>
@@ -182,12 +201,15 @@ async function editarProducto(id) {
                 };
 
                 if (imagenArchivo) {
-                    const reader = new FileReader();
-                    reader.onload = e => actualizarProducto(e.target.result);
-                    reader.readAsDataURL(imagenArchivo);
+                    uploadToCloudinary(imagenArchivo)
+                        .then(imagenUrl => actualizarProducto(imagenUrl))
+                        .catch(() => {
+                            Swal.fire("Error", "No se pudo subir la nueva imagen", "error");
+                        });
                 } else {
                     actualizarProducto(null);
                 }
+
             }
         });
 

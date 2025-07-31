@@ -5,18 +5,6 @@ function aplicarTema(nombreTema) {
     }
 }
 
-// async function aplicarTemaGuardado() {
-//     try {
-//         const res = await fetch("https://firstp-api.onrender.com/api/settings");
-//         const config = await res.json();
-//         if (config?.theme) {
-//             aplicarTema(config.theme);
-//             document.getElementById("theme-selector").value = config.theme;
-//         }
-//     } catch (error) {
-//         console.error("No se pudo aplicar el tema guardado:", error);
-//     }
-// }
 async function aplicarTemaGuardado() {
     try {
         const res = await fetch("https://firstp-api.onrender.com/api/settings");
@@ -52,7 +40,7 @@ async function saveConfig() {
 
         // 🧩 Fusionar con el nuevo tema
         const updatedConfig = { ...currentConfig, theme: selectedTheme };
-        
+
         // 💾 Guardar configuración actualizada
         const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
             method: "POST",
@@ -64,7 +52,7 @@ async function saveConfig() {
 
         const data = await saveRes.json();
         console.log("Tema guardado:", data);
-        
+
         Swal.fire({
             icon: "success",
             title: "Configuración guardada",
@@ -115,7 +103,6 @@ async function guardarMarca() {
 
 
 function aplicarMarca(id) {
-    // const marca = localStorage.getItem("selectedMarca");
     const target = document.getElementById(id);
 
     if (marca && target) {
@@ -132,6 +119,74 @@ function aplicarMarca(id) {
     }
 }
 
+// CLOUDINARY
+async function uploadToCloudinary(file) {
+    const url = 'https://api.cloudinary.com/v1_1/<tu-cloud-name>/image/upload';
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', '<tu-upload-preset>');
+
+    try {
+        const res = await fetch(url, { method: 'POST', body: formData });
+        const data = await res.json();
+        return data.secure_url; // ✅ URL optimizada
+    } catch (err) {
+        console.error('Error al subir a Cloudinary:', err);
+        return null;
+    }
+}
+
+// async function guardarLogo() {
+//     const input = document.getElementById("logo-input");
+//     const file = input?.files[0];
+
+//     if (!file) {
+//         Swal.fire({ icon: "error", title: "Selecciona un logo primero" });
+//         return;
+//     }
+
+//     const reader = new FileReader();
+//     reader.onloadend = async () => {
+//         const logoBase64 = reader.result;
+
+//         // Vista previa
+//         document.getElementById("logo-preview").src = logoBase64;
+
+//         try {
+//             // 🔁 Obtener configuración actual
+//             const currentRes = await fetch("https://firstp-api.onrender.com/api/settings");
+//             const currentConfig = await currentRes.json();
+
+//             // 🧩 Fusionar con el nuevo logo
+//             const updatedConfig = { ...currentConfig, logo: logoBase64 };
+
+//             // 💾 Guardar configuración actualizada
+//             const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
+//                 method: "POST",
+//                 headers: { "Content-Type": "application/json" },
+//                 body: JSON.stringify(updatedConfig)
+//             });
+
+//             if (!saveRes.ok) throw new Error("Error al guardar logo");
+
+//             const data = await saveRes.json();
+//             console.log("Logo guardado:", data);
+
+//             Swal.fire({
+//                 icon: "success",
+//                 title: "Logo actualizado",
+//                 timer: 1500,
+//                 showConfirmButton: false
+//             }).then(() => window.location.reload());
+
+//         } catch (err) {
+//             console.error(err);
+//             Swal.fire({ icon: "error", title: "Falló el guardado" });
+//         }
+//     };
+
+//     reader.readAsDataURL(file);
+// }
 async function guardarLogo() {
     const input = document.getElementById("logo-input");
     const file = input?.files[0];
@@ -141,52 +196,40 @@ async function guardarLogo() {
         return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-        const logoBase64 = reader.result;
+    // 🔼 Subir a Cloudinary
+    const cloudinaryUrl = await uploadToCloudinary(file);
 
-        // Vista previa
-        document.getElementById("logo-preview").src = logoBase64;
+    if (!cloudinaryUrl) {
+        Swal.fire({ icon: "error", title: "Falló la subida a Cloudinary" });
+        return;
+    }
 
-        try {
-            // 🔁 Obtener configuración actual
-            const currentRes = await fetch("https://firstp-api.onrender.com/api/settings");
-            const currentConfig = await currentRes.json();
+    // 🎯 Mostrar preview
+    document.getElementById("logo-preview").src = cloudinaryUrl;
 
-            // 🧩 Fusionar con el nuevo logo
-            const updatedConfig = { ...currentConfig, logo: logoBase64 };
+    try {
+        const currentRes = await fetch("https://firstp-api.onrender.com/api/settings");
+        const currentConfig = await currentRes.json();
+        const updatedConfig = { ...currentConfig, logo: cloudinaryUrl };
 
-            // 💾 Guardar configuración actualizada
-            const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updatedConfig)
-            });
+        const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedConfig)
+        });
 
-            if (!saveRes.ok) throw new Error("Error al guardar logo");
+        if (!saveRes.ok) throw new Error("Error al guardar logo");
+        Swal.fire({ icon: "success", title: "Logo actualizado", timer: 1500, showConfirmButton: false });
 
-            const data = await saveRes.json();
-            console.log("Logo guardado:", data);
-
-            Swal.fire({
-                icon: "success",
-                title: "Logo actualizado",
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => window.location.reload());
-
-        } catch (err) {
-            console.error(err);
-            Swal.fire({ icon: "error", title: "Falló el guardado" });
-        }
-    };
-
-    reader.readAsDataURL(file);
+    } catch (err) {
+        console.error(err);
+        Swal.fire({ icon: "error", title: "Falló el guardado del logo" });
+    }
 }
+
 
 function aplicarLogo(id) {
     const img = document.getElementById(id);
-    // const logoBase64 = localStorage.getItem("logoGuardado") || "static/img/SS.png";
 
     if (img) {
         img.src = logoBase64;
@@ -195,6 +238,7 @@ function aplicarLogo(id) {
         console.warn(`No se encontró el elemento con ID ${id} para aplicar el logo`);
     }
 }
+
 function obtenerLogoDelBackend() {
     fetch("https://firstp-api.onrender.com/api/settings")
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener configuración"))
@@ -209,22 +253,6 @@ function obtenerLogoDelBackend() {
         .catch(err => console.error("No se pudo obtener el logo:", err));
 }
 
-// function aplicarMarcaDesdeBackend() {
-//     fetch("https://firstp-api.onrender.com/api/settings")
-//         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener la marca"))
-//         .then(config => {
-//             const marcaFinal = config?.marca || "FirstP";
-//             // localStorage.setItem("selectedMarca", marcaFinal);
-
-//             // 🔁 Insertar marca en todos los lugares con id nombre-marca
-//             document.querySelectorAll("#nombre-marca, #marca-display").forEach(el => {
-//                 el.textContent = marcaFinal;
-//             });
-//         })
-//         .catch(err => {
-//             console.error("No se pudo cargar la marca:", err);
-//         });
-// }
 function aplicarMarcaDesdeBackend() {
     fetch("https://firstp-api.onrender.com/api/settings")
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener la marca"))
@@ -240,28 +268,6 @@ function aplicarMarcaDesdeBackend() {
         });
 }
 
-// function aplicarLogoDesdeBackend() {
-//     fetch("https://firstp-api.onrender.com/api/settings")
-//         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener configuración"))
-//         .then(data => {
-//             const logoFinal = data?.logo && data.logo.startsWith("data:image/")
-//                 ? data.logo
-//                 : "static/img/SS.png";
-
-//             // localStorage.setItem("logoGuardado", logoFinal);
-
-//             ["navbar-logo", "footer-logo", "logo-preview"].forEach(id => {
-//                 const img = document.getElementById(id);
-//                 if (img) {
-//                     img.src = logoFinal;
-//                     img.alt = "Logo dinámico";
-//                 }
-//             });
-//         })
-//         .catch(err => {
-//             console.error("No se pudo aplicar el logo:", err);
-//         });
-// }
 function aplicarLogoDesdeBackend() {
     fetch("https://firstp-api.onrender.com/api/settings")
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener configuración"))
@@ -318,10 +324,6 @@ function resetSessionConfig() {
     sessionStorage.removeItem("configMarca");
     sessionStorage.removeItem("configTheme");
 }
-
-
-
-// document.addEventListener("DOMContentLoaded", () => {
 //     aplicarTemaGuardado();         // Tema desde backend
 //     aplicarMarcaDesdeBackend();    // Marca desde backend
 //     aplicarLogoDesdeBackend();     // Logo desde backend
