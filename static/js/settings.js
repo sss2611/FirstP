@@ -43,7 +43,7 @@ async function saveConfig() {
 
         const data = await res.json();
         console.log("Tema guardado:", data);
-        localStorage.setItem("selectedTheme", selectedTheme);
+        // localStorage.setItem("selectedTheme", selectedTheme);
 
         Swal.fire({
             icon: "success",
@@ -66,7 +66,7 @@ function guardarMarca() {
     const marca = document.getElementById("theme-input")?.value;
     if (!marca) return;
 
-    localStorage.setItem("selectedMarca", marca);
+    // localStorage.setItem("selectedMarca", marca);
 
     fetch("https://firstp-api.onrender.com/api/settings", {
         method: "POST",
@@ -93,7 +93,7 @@ function guardarMarca() {
 }
 
 function aplicarMarca(id) {
-    const marca = localStorage.getItem("selectedMarca");
+    // const marca = localStorage.getItem("selectedMarca");
     const target = document.getElementById(id);
 
     if (marca && target) {
@@ -136,7 +136,7 @@ function guardarLogo() {
             .then(res => res.ok ? res.json() : Promise.reject("Error al guardar logo"))
             .then(data => {
                 console.log("Logo guardado:", data);
-                localStorage.setItem("logoGuardado", logoBase64);
+                // localStorage.setItem("logoGuardado", logoBase64);
 
                 Swal.fire({
                     icon: "success",
@@ -158,7 +158,7 @@ function guardarLogo() {
 
 function aplicarLogo(id) {
     const img = document.getElementById(id);
-    const logoBase64 = localStorage.getItem("logoGuardado") || "static/img/SS.png";
+    // const logoBase64 = localStorage.getItem("logoGuardado") || "static/img/SS.png";
 
     if (img) {
         img.src = logoBase64;
@@ -172,7 +172,7 @@ function obtenerLogoDelBackend() {
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener configuración"))
         .then(data => {
             if (data.logo) {
-                localStorage.setItem("logoGuardado", data.logo);
+                // localStorage.setItem("logoGuardado", data.logo);
                 aplicarLogo("footer-logo");
                 aplicarLogo("navbar-logo");
                 aplicarLogo("logo-preview");
@@ -186,7 +186,7 @@ function aplicarMarcaDesdeBackend() {
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener la marca"))
         .then(config => {
             const marcaFinal = config?.marca || "FirstP";
-            localStorage.setItem("selectedMarca", marcaFinal);
+            // localStorage.setItem("selectedMarca", marcaFinal);
 
             // 🔁 Insertar marca en todos los lugares con id nombre-marca
             document.querySelectorAll("#nombre-marca, #marca-display").forEach(el => {
@@ -206,7 +206,7 @@ function aplicarLogoDesdeBackend() {
                 ? data.logo
                 : "static/img/SS.png";
 
-            localStorage.setItem("logoGuardado", logoFinal);
+            // localStorage.setItem("logoGuardado", logoFinal);
 
             ["navbar-logo", "footer-logo", "logo-preview"].forEach(id => {
                 const img = document.getElementById(id);
@@ -222,7 +222,7 @@ function aplicarLogoDesdeBackend() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    aplicarTemaDesdeLocalStorage();
-    aplicarMarcaDesdeBackend();
-    aplicarLogoDesdeBackend();
+    aplicarTemaGuardado();         // Tema desde backend
+    aplicarMarcaDesdeBackend();    // Marca desde backend
+    aplicarLogoDesdeBackend();     // Logo desde backend
 });
