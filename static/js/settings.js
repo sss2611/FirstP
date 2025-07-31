@@ -5,16 +5,16 @@ function aplicarTema(nombreTema) {
     }
 }
 
-function aplicarTemaDesdeLocalStorage() {
-    const temaLocal = localStorage.getItem("selectedTheme");
-    if (temaLocal) {
-        aplicarTema(temaLocal);
-        document.body.classList.add(temaLocal);
-        console.log("Tema aplicado:", temaLocal);
-    } else {
-        aplicarTemaGuardado();
-    }
-}
+// function aplicarTemaDesdeLocalStorage() {
+//     const temaLocal = localStorage.getItem("selectedTheme");
+//     if (temaLocal) {
+//         aplicarTema(temaLocal);
+//         document.body.classList.add(temaLocal);
+//         console.log("Tema aplicado:", temaLocal);
+//     } else {
+//         aplicarTemaGuardado();
+//     }
+// }
 
 async function aplicarTemaGuardado() {
     try {
@@ -193,10 +193,56 @@ function obtenerLogoDelBackend() {
 }
 
 
+// document.addEventListener("DOMContentLoaded", () => {
+//     aplicarTemaDesdeLocalStorage();
+//     aplicarMarca("marca-display");
+//     aplicarMarca("nombre-marca");
+
+//     obtenerLogoDelBackend(); 
+// });
+
+function aplicarMarcaDesdeBackend() {
+    fetch("https://firstp-api.onrender.com/api/settings")
+        .then(res => res.ok ? res.json() : Promise.reject("Error al obtener la marca"))
+        .then(config => {
+            const marcaFinal = config?.marca || "FirstP";
+            localStorage.setItem("selectedMarca", marcaFinal);
+
+            // 🔁 Insertar marca en todos los lugares con id nombre-marca
+            document.querySelectorAll("#nombre-marca, #marca-display").forEach(el => {
+                el.textContent = marcaFinal;
+            });
+        })
+        .catch(err => {
+            console.error("No se pudo cargar la marca:", err);
+        });
+}
+
+function aplicarLogoDesdeBackend() {
+    fetch("https://firstp-api.onrender.com/api/settings")
+        .then(res => res.ok ? res.json() : Promise.reject("Error al obtener configuración"))
+        .then(data => {
+            const logoFinal = data?.logo && data.logo.startsWith("data:image/")
+                ? data.logo
+                : "static/img/SS.png";
+
+            localStorage.setItem("logoGuardado", logoFinal);
+
+            ["navbar-logo", "footer-logo", "logo-preview"].forEach(id => {
+                const img = document.getElementById(id);
+                if (img) {
+                    img.src = logoFinal;
+                    img.alt = "Logo dinámico";
+                }
+            });
+        })
+        .catch(err => {
+            console.error("No se pudo aplicar el logo:", err);
+        });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     aplicarTemaDesdeLocalStorage();
-    aplicarMarca("marca-display");
-    aplicarMarca("nombre-marca");
-
-    obtenerLogoDelBackend(); 
+    aplicarMarcaDesdeBackend();
+    aplicarLogoDesdeBackend();
 });
