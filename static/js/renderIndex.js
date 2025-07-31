@@ -1,18 +1,18 @@
 const contenedor = document.querySelector(".productos");
+const loader = document.getElementById("productos-loader");
 
 async function renderProductos() {
   contenedor.innerHTML = "";
+  loader.style.display = "block";
 
   try {
     const res = await fetch("https://firstp-api.onrender.com/api/products");
     const productos = await res.json();
 
-    // 🔍 Filtrar productos publicados (acepta booleano o string)
     const productosPublicados = productos.filter(
       p => p.publicado === true || p.publicado === "true"
     );
 
-    // 🧪 Debug opcional para verificar la respuesta
     console.table(productosPublicados);
 
     productosPublicados.forEach((p) => {
@@ -52,6 +52,8 @@ async function renderProductos() {
   } catch (err) {
     console.error("Error al cargar productos:", err);
     contenedor.innerHTML = `<p class="text-danger text-center">No se pudieron cargar los productos.</p>`;
+  } finally {
+    loader.style.display = "none"; // 🧹 Ocultar el loader
   }
 }
 

@@ -201,37 +201,29 @@
 // });
 
 // TEMAS
+// TEMAS
 function aplicarTema(nombreTema) {
     const themeLink = document.getElementById("theme-link");
     if (themeLink) {
         themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${nombreTema}/bootstrap.min.css`;
         document.body.classList.add(nombreTema);
     }
-    sessionStorage.setItem("currentTheme", nombreTema);
+    // ❌ No guardar en sessionStorage
 }
 
 async function aplicarTemaInteligente() {
-    const temaSesion = sessionStorage.getItem("currentTheme");
-
-    if (temaSesion) {
-        aplicarTema(temaSesion);
-        document.getElementById("theme-selector").value = temaSesion;
-        console.log("Tema desde sesión:", temaSesion);
-        return;
-    }
-
     try {
         const res = await fetch("https://firstp-api.onrender.com/api/settings");
         const config = await res.json();
 
-        const temaDesdeBack = config?.theme || "lux"; // Usar 'lux' si no hay tema guardado
+        const temaDesdeBack = config?.theme || "lux"; // Valor por defecto si no hay nada en el backend
 
         aplicarTema(temaDesdeBack);
         document.getElementById("theme-selector").value = temaDesdeBack;
-        console.log("Tema desde backend (o lux):", temaDesdeBack);
+        console.log("Tema aplicado desde backend:", temaDesdeBack);
     } catch (error) {
         console.error("Error al aplicar tema:", error);
-        aplicarTema("lux"); // Fallback si falla todo
+        aplicarTema("lux"); // Fallback
     }
 }
 
@@ -364,8 +356,10 @@ function guardarLogo() {
 
 function aplicarLogo(id, base64) {
     const img = document.getElementById(id);
-    if (base64 && img) {
-        img.src = base64;
+    const defaultLogo = "static/img/SS.png";
+
+    if (img) {
+        img.src = base64 && base64.startsWith("data:image") ? base64 : defaultLogo;
         img.alt = "Logo dinámico";
     }
 }
