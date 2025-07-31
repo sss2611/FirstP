@@ -1,4 +1,4 @@
-const API_URL = "https://firstp-api.onrender.com/api";
+const API_URL = "https://firstp-api-production.up.railway.app/api";
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-nuevo-producto").addEventListener("click", mostrarFormularioProducto);
@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function uploadToCloudinary(file) {
-    const url = 'https://api.cloudinary.com/v1_1/<tu-cloud-name>/image/upload';
+    const url = 'https://api.cloudinary.com/v1_1/dhuxbiud1/image/upload';
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', '<tu-upload-preset>');

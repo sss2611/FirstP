@@ -1,3 +1,6 @@
+const API_URL = "https://firstp-api-production.up.railway.app/api";
+
+
 function aplicarTema(nombreTema) {
     const themeLink = document.getElementById("theme-link");
     if (themeLink) {
@@ -7,7 +10,7 @@ function aplicarTema(nombreTema) {
 
 async function aplicarTemaGuardado() {
     try {
-        const res = await fetch("https://firstp-api.onrender.com/api/settings");
+        const res = await fetch(`${API_URL}/settings`)
         const config = await res.json();
         if (config?.theme) {
             aplicarTema(config.theme);
@@ -35,14 +38,14 @@ async function saveConfig() {
 
     try {
         // 🔁 Obtener configuración actual
-        const currentRes = await fetch("https://firstp-api.onrender.com/api/settings");
+        const currentRes = await fetch(`${API_URL}/settings`);
         const currentConfig = await currentRes.json();
 
         // 🧩 Fusionar con el nuevo tema
         const updatedConfig = { ...currentConfig, theme: selectedTheme };
 
         // 💾 Guardar configuración actualizada
-        const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
+        const saveRes = await fetch(`${API_URL}/settings`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(updatedConfig)
@@ -73,12 +76,12 @@ async function guardarMarca() {
     if (!marca) return;
 
     try {
-        const res = await fetch("https://firstp-api.onrender.com/api/settings");
+        const res = await fetch(`${API_URL}/settings`);
         const config = await res.json();
 
         const updatedConfig = { ...config, marca };
 
-        const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
+        const saveRes = await fetch(`${API_URL}/settings`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(updatedConfig)
@@ -108,7 +111,7 @@ function aplicarMarca(id) {
     if (marca && target) {
         target.textContent = marca;
     } else {
-        fetch("https://firstp-api.onrender.com/api/settings")
+        fetch(`${API_URL}/settings`)
             .then(res => res.json())
             .then(config => {
                 if (config?.marca && target) {
@@ -121,7 +124,7 @@ function aplicarMarca(id) {
 
 // CLOUDINARY
 async function uploadToCloudinary(file) {
-    const url = 'https://api.cloudinary.com/v1_1/<tu-cloud-name>/image/upload';
+    const url = 'https://api.cloudinary.com/v1_1/dhuxbiud1/image/upload';
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', '<tu-upload-preset>');
@@ -136,57 +139,6 @@ async function uploadToCloudinary(file) {
     }
 }
 
-// async function guardarLogo() {
-//     const input = document.getElementById("logo-input");
-//     const file = input?.files[0];
-
-//     if (!file) {
-//         Swal.fire({ icon: "error", title: "Selecciona un logo primero" });
-//         return;
-//     }
-
-//     const reader = new FileReader();
-//     reader.onloadend = async () => {
-//         const logoBase64 = reader.result;
-
-//         // Vista previa
-//         document.getElementById("logo-preview").src = logoBase64;
-
-//         try {
-//             // 🔁 Obtener configuración actual
-//             const currentRes = await fetch("https://firstp-api.onrender.com/api/settings");
-//             const currentConfig = await currentRes.json();
-
-//             // 🧩 Fusionar con el nuevo logo
-//             const updatedConfig = { ...currentConfig, logo: logoBase64 };
-
-//             // 💾 Guardar configuración actualizada
-//             const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
-//                 method: "POST",
-//                 headers: { "Content-Type": "application/json" },
-//                 body: JSON.stringify(updatedConfig)
-//             });
-
-//             if (!saveRes.ok) throw new Error("Error al guardar logo");
-
-//             const data = await saveRes.json();
-//             console.log("Logo guardado:", data);
-
-//             Swal.fire({
-//                 icon: "success",
-//                 title: "Logo actualizado",
-//                 timer: 1500,
-//                 showConfirmButton: false
-//             }).then(() => window.location.reload());
-
-//         } catch (err) {
-//             console.error(err);
-//             Swal.fire({ icon: "error", title: "Falló el guardado" });
-//         }
-//     };
-
-//     reader.readAsDataURL(file);
-// }
 async function guardarLogo() {
     const input = document.getElementById("logo-input");
     const file = input?.files[0];
@@ -208,11 +160,11 @@ async function guardarLogo() {
     document.getElementById("logo-preview").src = cloudinaryUrl;
 
     try {
-        const currentRes = await fetch("https://firstp-api.onrender.com/api/settings");
+        const currentRes = awaitfetch(`${API_URL}/settings`);
         const currentConfig = await currentRes.json();
         const updatedConfig = { ...currentConfig, logo: cloudinaryUrl };
 
-        const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
+        const saveRes = await fetch(`${API_URL}/settings`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(updatedConfig)
@@ -240,7 +192,7 @@ function aplicarLogo(id) {
 }
 
 function obtenerLogoDelBackend() {
-    fetch("https://firstp-api.onrender.com/api/settings")
+        fetch(`${API_URL}/settings`)
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener configuración"))
         .then(data => {
             if (data.logo) {
@@ -254,7 +206,7 @@ function obtenerLogoDelBackend() {
 }
 
 function aplicarMarcaDesdeBackend() {
-    fetch("https://firstp-api.onrender.com/api/settings")
+    fetch(`${API_URL}/settings`)
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener la marca"))
         .then(config => {
             const marcaFinal = config?.marca || "FirstP";
@@ -269,7 +221,7 @@ function aplicarMarcaDesdeBackend() {
 }
 
 function aplicarLogoDesdeBackend() {
-    fetch("https://firstp-api.onrender.com/api/settings")
+    fetch(`${API_URL}/settings`)
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener configuración"))
         .then(data => {
             const logoFinal = data?.logo && data.logo.startsWith("data:image/")
