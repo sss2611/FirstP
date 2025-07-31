@@ -23,6 +23,41 @@ document.getElementById("theme-selector")?.addEventListener("change", function (
     aplicarTema(selectedTheme);
 });
 
+// async function saveConfig() {
+//     const selectedTheme = document.getElementById("theme-selector").value;
+//     const spinner = document.getElementById("spinner");
+//     const buttonText = document.getElementById("button-text");
+
+//     spinner?.classList.remove("d-none");
+//     if (buttonText) buttonText.textContent = "Guardando...";
+
+//     try {
+//         const res = await fetch("https://firstp-api.onrender.com/api/settings", {
+//             method: "POST",
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify({ theme: selectedTheme })
+//         });
+
+//         if (!res.ok) throw new Error("Error al guardar");
+
+//         const data = await res.json();
+//         console.log("Tema guardado:", data);
+//         // localStorage.setItem("selectedTheme", selectedTheme);
+
+//         Swal.fire({
+//             icon: "success",
+//             title: "Configuración guardada",
+//             timer: 1500,
+//             showConfirmButton: false
+//         });
+//     } catch (error) {
+//         console.error("Error en la solicitud:", error);
+//         Swal.fire({ icon: "error", title: "Error al guardar la configuración" });
+//     } finally {
+//         spinner?.classList.add("d-none");
+//         if (buttonText) buttonText.textContent = "Guardar configuración";
+//     }
+// }
 
 async function saveConfig() {
     const selectedTheme = document.getElementById("theme-selector").value;
@@ -33,18 +68,25 @@ async function saveConfig() {
     if (buttonText) buttonText.textContent = "Guardando...";
 
     try {
-        const res = await fetch("https://firstp-api.onrender.com/api/settings", {
+        // 🔁 Obtener configuración actual
+        const currentRes = await fetch("https://firstp-api.onrender.com/api/settings");
+        const currentConfig = await currentRes.json();
+
+        // 🧩 Fusionar con el nuevo tema
+        const updatedConfig = { ...currentConfig, theme: selectedTheme };
+        
+        // 💾 Guardar configuración actualizada
+        const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ theme: selectedTheme })
+            body: JSON.stringify(updatedConfig)
         });
 
-        if (!res.ok) throw new Error("Error al guardar");
+        if (!saveRes.ok) throw new Error("Error al guardar");
 
-        const data = await res.json();
+        const data = await saveRes.json();
         console.log("Tema guardado:", data);
-        // localStorage.setItem("selectedTheme", selectedTheme);
-
+        
         Swal.fire({
             icon: "success",
             title: "Configuración guardada",
@@ -60,37 +102,69 @@ async function saveConfig() {
     }
 }
 
+// function guardarMarca() {
+//     const marca = document.getElementById("theme-input")?.value;
+//     if (!marca) return;
 
+//     // localStorage.setItem("selectedMarca", marca);
 
-function guardarMarca() {
+//     fetch("https://firstp-api.onrender.com/api/settings", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ marca })
+//     })
+//         .then(res => {
+//             if (!res.ok) throw new Error("Error al guardar la marca");
+//             return res.json();
+//         })
+//         .then(data => {
+//             console.log("Marca guardada:", data);
+//             Swal.fire({
+//                 icon: "success",
+//                 title: "Nombre guardado",
+//                 timer: 1500,
+//                 showConfirmButton: false
+//             }).then(() => window.location.reload());
+//         })
+//         .catch(error => {
+//             console.error("Error al guardar la marca:", error);
+//             Swal.fire({ icon: "error", title: "No se pudo guardar la marca" });
+//         });
+// }
+
+async function guardarMarca() {
     const marca = document.getElementById("theme-input")?.value;
     if (!marca) return;
 
-    // localStorage.setItem("selectedMarca", marca);
+    try {
+        const res = await fetch("https://firstp-api.onrender.com/api/settings");
+        const config = await res.json();
 
-    fetch("https://firstp-api.onrender.com/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ marca })
-    })
-        .then(res => {
-            if (!res.ok) throw new Error("Error al guardar la marca");
-            return res.json();
-        })
-        .then(data => {
-            console.log("Marca guardada:", data);
-            Swal.fire({
-                icon: "success",
-                title: "Nombre guardado",
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => window.location.reload());
-        })
-        .catch(error => {
-            console.error("Error al guardar la marca:", error);
-            Swal.fire({ icon: "error", title: "No se pudo guardar la marca" });
+        const updatedConfig = { ...config, marca };
+
+        const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedConfig)
         });
+
+        if (!saveRes.ok) throw new Error("Error al guardar la marca");
+
+        const data = await saveRes.json();
+        console.log("Marca guardada:", data);
+
+        Swal.fire({
+            icon: "success",
+            title: "Nombre guardado",
+            timer: 1500,
+            showConfirmButton: false
+        }).then(() => window.location.reload());
+    } catch (error) {
+        console.error("Error al guardar la marca:", error);
+        Swal.fire({ icon: "error", title: "No se pudo guardar la marca" });
+    }
 }
+
 
 function aplicarMarca(id) {
     // const marca = localStorage.getItem("selectedMarca");
@@ -110,9 +184,51 @@ function aplicarMarca(id) {
     }
 }
 
+// function guardarLogo() {
+//     const input = document.getElementById("logo-input");
+//     const file = input?.files[0];
 
+//     if (!file) {
+//         Swal.fire({ icon: "error", title: "Selecciona un logo primero" });
+//         return;
+//     }
 
-function guardarLogo() {
+//     const reader = new FileReader();
+//     reader.onloadend = () => {
+//         const logoBase64 = reader.result;
+
+//         // Vista previa
+//         document.getElementById("logo-preview").src = logoBase64;
+
+//         fetch("https://firstp-api.onrender.com/api/settings", {
+//             method: "POST",
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify({ logo: logoBase64 })
+//         })
+//             .then(res => res.ok ? res.json() : Promise.reject("Error al guardar logo"))
+//             .then(data => {
+//                 console.log("Logo guardado:", data);
+//                 // localStorage.setItem("logoGuardado", logoBase64);
+
+//                 Swal.fire({
+//                     icon: "success",
+//                     title: "Logo actualizado",
+//                     timer: 1500,
+//                     showConfirmButton: false
+//                 }).then(() => {
+//                     window.location.reload();
+//                 });
+//             })
+//             .catch(err => {
+//                 console.error(err);
+//                 Swal.fire({ icon: "error", title: "Falló el guardado" });
+//             });
+//     };
+
+//     reader.readAsDataURL(file);
+// }
+
+async function guardarLogo() {
     const input = document.getElementById("logo-input");
     const file = input?.files[0];
 
@@ -122,35 +238,43 @@ function guardarLogo() {
     }
 
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
         const logoBase64 = reader.result;
 
         // Vista previa
         document.getElementById("logo-preview").src = logoBase64;
 
-        fetch("https://firstp-api.onrender.com/api/settings", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ logo: logoBase64 })
-        })
-            .then(res => res.ok ? res.json() : Promise.reject("Error al guardar logo"))
-            .then(data => {
-                console.log("Logo guardado:", data);
-                // localStorage.setItem("logoGuardado", logoBase64);
+        try {
+            // 🔁 Obtener configuración actual
+            const currentRes = await fetch("https://firstp-api.onrender.com/api/settings");
+            const currentConfig = await currentRes.json();
 
-                Swal.fire({
-                    icon: "success",
-                    title: "Logo actualizado",
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.reload();
-                });
-            })
-            .catch(err => {
-                console.error(err);
-                Swal.fire({ icon: "error", title: "Falló el guardado" });
+            // 🧩 Fusionar con el nuevo logo
+            const updatedConfig = { ...currentConfig, logo: logoBase64 };
+
+            // 💾 Guardar configuración actualizada
+            const saveRes = await fetch("https://firstp-api.onrender.com/api/settings", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedConfig)
             });
+
+            if (!saveRes.ok) throw new Error("Error al guardar logo");
+
+            const data = await saveRes.json();
+            console.log("Logo guardado:", data);
+
+            Swal.fire({
+                icon: "success",
+                title: "Logo actualizado",
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => window.location.reload());
+
+        } catch (err) {
+            console.error(err);
+            Swal.fire({ icon: "error", title: "Falló el guardado" });
+        }
     };
 
     reader.readAsDataURL(file);
