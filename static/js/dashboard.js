@@ -1,5 +1,5 @@
 const API_URL = "https://firstp-api-production.up.railway.app/api";
-const CLOUDINARY_PRESET = "firstp2025"; // Asegurate que esté creado en tu panel Cloudinary
+const CLOUDINARY_PRESET = "firstp"; // Asegurate que esté creado en tu panel Cloudinary
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-nuevo-producto")?.addEventListener("click", mostrarFormularioProducto);

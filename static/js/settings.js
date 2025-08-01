@@ -89,8 +89,8 @@ async function uploadToCloudinary(file) {
     const url = 'https://api.cloudinary.com/v1_1/dhuxbiud1/image/upload'; // tu cloud name
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'firstp'); 
-   
+    formData.append('upload_preset', 'firstp');
+
 
     try {
         const res = await fetch(url, { method: 'POST', body: formData });
