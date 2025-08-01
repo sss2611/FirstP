@@ -5,14 +5,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel del dministrador</title>
-    <link id="theme-link" href="" rel="stylesheet" />
     <link rel="icon" type="image/png" sizes="32x32" href="/static/img/logos/SS.png" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/styles.css" />
     <link rel="stylesheet" href="/static/css/navbar.css" />
     <link rel="stylesheet" href="/static/css/dashboard.css" />
-
+    <link id="theme-link" rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css">
 </head>
 
 <body>
@@ -26,59 +26,42 @@
 
 
     <main>
+        <!-- BOX: Tema -->
         <div id="theme-box" class="container my-4 p-2 border rounded bg-light shadow">
             <h5 class="mb-3"><i class="fa-solid fa-palette me-2"></i>Temas</h5>
             <div class="mb-3">
                 <label for="theme-selector" class="box-config">Seleccionar color:</label>
-                <select id="theme-selector" class="form-select">
-                    <option value="cerulean">Cerulean</option>
-                    <option value="cosmo">Cosmo</option>
-                    <option value="darkly">Darkly</option>
-                    <option value="flatly">Flatly</option>
-                    <option value="lux">Lux</option>
-                    <option value="sketchy">Sketchy</option>
-                    <option value="united" selected>United</option>
-                </select>
+                <select id="theme-selector" class="form-select"></select>
             </div>
             <button id="save-theme" class="btn btn-primary px-2 py-1 rounded shadow d-flex align-items-center gap-2"
                 onclick="saveConfig()">
-                <span class="spinner-border spinner-border-sm d-none" id="spinner" role="status"
-                    aria-hidden="true"></span>
-                <span id="button-text"> Guardar configuración</span>
+                <span class="spinner-border spinner-border-sm d-none" id="spinner" role="status"></span>
+                <span id="button-text">Guardar configuración</span>
             </button>
         </div>
 
+        <!-- BOX: Marca -->
         <div id="brand-box" class="container my-4 p-2 border rounded bg-light shadow">
             <h5 class="mb-3"><i class="fa-solid fa-tag me-2"></i>Marca</h5>
-
             <div class="mb-3">
                 <label for="theme-input" class="box-config">Selecciona Nombre:</label>
                 <input type="text" class="form-control" id="theme-input" placeholder="Ingresa el nombre de la marca">
             </div>
-
             <button class="btn btn-primary px-2 py-1 rounded shadow d-flex align-items-center gap-2"
-                onclick="guardarMarca()">
-                Guardar Nombre
-            </button>
+                onclick="guardarMarca()">Guardar Nombre</button>
         </div>
 
+        <!-- BOX: Logo -->
         <div id="logo-box" class="container my-4 p-2 border rounded bg-light shadow">
-            <h5 class="mb-3">
-                <i class="fa-solid fa-image me-2"></i>Logo
-            </h5>
-
+            <h5 class="mb-3"><i class="fa-solid fa-image me-2"></i>Logo</h5>
             <div class="mb-3">
                 <label for="logo-input" class="box-config">Subir Imagen:</label>
                 <input type="file" id="logo-input" accept="image/*" class="form-control">
             </div>
-
             <button class="btn btn-primary px-2 py-1 rounded shadow d-flex align-items-center gap-2"
-                onclick="guardarLogo()">
-                Guardar Logo
-            </button>
-            <img id="logo-preview" style="display:block; margin:0 auto; max-height:100px;" />
+                onclick="guardarLogo()">Guardar Logo</button>
+            <img id="logo-preview" src="static/img/SS.png" style="display:block; margin:0 auto; max-height:100px;" />
         </div>
-
 
         <section class="container py-5">
             <h1>Carga de Productos de <span id="nombre-marca">FirstP</span></h1>

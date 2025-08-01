@@ -1,16 +1,27 @@
 const API_URL = "https://firstp-api-production.up.railway.app/api";
 
-// 🟦 Aplicar tema
+const temasDisponibles = ["flatly", "darkly", "litera", "cyborg", "sandstone", "sketchy", "lux", "united", "cosmo", "cerulean"];
+const selector = document.getElementById("theme-selector");
+temasDisponibles.forEach(t => {
+    const option = document.createElement("option");
+    option.value = t;
+    option.textContent = t.charAt(0).toUpperCase() + t.slice(1);
+    selector.appendChild(option);
+});
+
 function aplicarTema(nombreTema) {
     const themeLink = document.getElementById("theme-link");
-    if (themeLink) {
-        themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${nombreTema}/bootstrap.min.css`;
-    }
+    document.body.style.opacity = 0;
+    setTimeout(() => {
+        if (themeLink) {
+            themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${nombreTema}/bootstrap.min.css`;
+        }
+        document.body.style.opacity = 1;
+    }, 300);
 }
 
-// ⚙️ Guardar tema en backend y recargar
 async function saveConfig() {
-    const selectedTheme = document.getElementById("theme-selector").value;
+    const selectedTheme = selector.value;
     const spinner = document.getElementById("spinner");
     const buttonText = document.getElementById("button-text");
 
@@ -40,26 +51,22 @@ async function saveConfig() {
     }
 }
 
-// 💾 Aplicar tema desde backend
 async function aplicarTemaGuardado() {
     try {
         const res = await fetch(`${API_URL}/settings`);
-        const config = await res.json();
-        if (config?.theme) {
-            aplicarTema(config.theme);
-            document.getElementById("theme-selector").value = config.theme;
-            sessionStorage.setItem("configTheme", config.theme);
-        }
+        const { theme = "flatly" } = await res.json();
+        aplicarTema(theme);
+        selector.value = theme;
+        sessionStorage.setItem("configTheme", theme);
     } catch (error) {
         console.error("No se pudo aplicar el tema guardado:", error);
     }
 }
 
-document.getElementById("theme-selector")?.addEventListener("change", function () {
+selector?.addEventListener("change", function () {
     aplicarTema(this.value);
 });
 
-// 🟨 Guardar nombre de marca
 async function guardarMarca() {
     const marca = document.getElementById("theme-input")?.value;
     if (!marca) return;
@@ -84,13 +91,11 @@ async function guardarMarca() {
     }
 }
 
-// 🟩 Subir logo a Cloudinary
 async function uploadToCloudinary(file) {
-    const url = 'https://api.cloudinary.com/v1_1/dhuxbiud1/image/upload'; // tu cloud name
+    const url = 'https://api.cloudinary.com/v1_1/dhuxbiud1/image/upload';
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', 'firstp');
-
 
     try {
         const res = await fetch(url, { method: 'POST', body: formData });
@@ -102,7 +107,6 @@ async function uploadToCloudinary(file) {
     }
 }
 
-// 🖼️ Guardar logo en backend
 async function guardarLogo() {
     const input = document.getElementById("logo-input");
     const file = input?.files[0];
@@ -139,7 +143,6 @@ async function guardarLogo() {
     }
 }
 
-// 🔁 Aplicar marca desde backend
 function aplicarMarcaDesdeBackend() {
     fetch(`${API_URL}/settings`)
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener marca"))
@@ -153,7 +156,6 @@ function aplicarMarcaDesdeBackend() {
         .catch(err => console.error("No se pudo aplicar la marca:", err));
 }
 
-// 🔁 Aplicar logo desde backend
 function aplicarLogoDesdeBackend() {
     fetch(`${API_URL}/settings`)
         .then(res => res.ok ? res.json() : Promise.reject("Error al obtener configuración"))
@@ -171,7 +173,6 @@ function aplicarLogoDesdeBackend() {
         .catch(err => console.error("No se pudo aplicar el logo:", err));
 }
 
-// ♻️ Aplicar desde sessionStorage (solo respaldo)
 function aplicarTemaDesdeSession() {
     const tema = sessionStorage.getItem("configTheme");
     if (tema) aplicarTema(tema);
@@ -197,14 +198,12 @@ function aplicarLogoDesdeSession() {
     });
 }
 
-// ⛔ Reset manual si se requiere
 function resetSessionConfig() {
     sessionStorage.removeItem("configLogo");
     sessionStorage.removeItem("configMarca");
     sessionStorage.removeItem("configTheme");
 }
 
-// 🚀 Al cargar vista
 document.addEventListener("DOMContentLoaded", () => {
     aplicarTemaDesdeSession();
     aplicarMarcaDesdeSession();
@@ -214,4 +213,3 @@ document.addEventListener("DOMContentLoaded", () => {
     aplicarMarcaDesdeBackend();
     aplicarLogoDesdeBackend();
 });
-s
