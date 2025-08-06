@@ -1,98 +1,72 @@
-*{
-  box-sizing: border-box;
+/* 🌐 Estructura del documento */
+html, body {
+  height: 100%;
   margin: 0;
-  padding: 0;
 }
 
 body {
-  height: 100%;
-  margin: 0;
   display: flex;
   flex-direction: column;
-  line-height: 1.6;
 }
 
-.productos .card {
-  background: var(--color-secundario);
-  border: black 1px solid;
+main {
+  flex: 1;
+}
+
+.config-card {
+  background-color: white;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
+  padding: 20px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
 }
 
-.productos .card:hover {
-  transform: translateY(-10px);
-}
 
-.productos .card-img-top {
-  height: 250px;
+/* 🛍️ Grilla de productos */
+/* .productos {
+  margin-top: 2rem;
+} */
+
+/* 🃏 Estilo base de las cards */
+/* .productos .card {
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+} */
+
+/* 👆 Animación suave al hacer hover */
+/* .productos .card:hover {
+  transform: translateY(-5px);
+} */
+
+/* 📷 Imágenes dentro de cards */
+/* .productos .card-img-top {
   object-fit: cover;
-  border-radius: 10px 10px 0 0;
-}
+  height: 180px;
+} */
 
-.productos .card-body {
-  padding: 10px;
-}
-
-.productos .card-title {
-  font-size: 20px;
-  color: var(--color-primario);
-  text-align: center;
+/* 📱 Responsive text */
+/* .productos .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .productos .card-text {
-  font-size: 16px;
-  color: var(--color-texto);
-  text-align: center;
+  font-size: 0.95rem;
+  color: #555;
+} */
+
+/* 📱 Ajustes para pantallas pequeñas */
+@media (max-width: 576px) {
+  .productos .card-img-top {
+    height: 140px;
+  }
+
+  .productos .card-title {
+    font-size: 1rem;
+  }
 }
 
-.productos .card-description {
-  font-size: 14px;
-  color: var(--color-texto);
-  text-align: justify;
-  margin: 10px 0;
-}
-
-.productos .card-price {
-  font-size: 18px;
-  color: var(--color-primario);
-  font-weight: bold;
-  text-align: center;
-}
-
-.productos .card-button {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-}
-.productos .card-button button {
-  font-size: 16px;
-  color: white;
-  background-color: var(--color-primario);
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.productos .card-button button {
-  background: var(--color-primario);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.productos .card-button button:focus {
-  outline: none;
-}
-.productos .card-button button:hover {
-  background: darken(var(--color-primario), 10%);
-}
-
+/* boton enviar pedido */
 .btn-neon {
   font-size: 18px;
   padding: 12px 28px;
@@ -116,12 +90,7 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 576px) {
-  .productos .card-img-top {
-    height: 140px;
-  }
-}
-
+/* celular */
 @media (max-width: 600px) {
   #btn-finalizar {
     left: 85% !important; /* centrado */
@@ -129,6 +98,7 @@ body {
   }
 }
 
+/* tablets */
 @media (min-width: 601px) and (max-width: 1024px) {
   #btn-finalizar {
     left: 90% !important;

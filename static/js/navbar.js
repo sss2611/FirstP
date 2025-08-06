@@ -7,42 +7,34 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .then(html => {
                 document.getElementById(id).innerHTML = html;
-                if (callback) callback(); // Se llama después de insertar el componente
+                if (callback) callback();
             })
             .catch(err => console.error("Falló carga de componente:", err));
     };
 
-    // ✅ Cargar navbar con correcciones
+    // ✅ Cargar navbar con lógica personalizada
     loadComponent("navbar", "/components/navbar.html", () => {
-        // Mostrar nombre personalizado si existe
-        const marca = localStorage.getItem("nombreMarca") || localStorage.getItem("selectedMarca");
-
+        const marca = localStorage.getItem("nombreMarca");
         const lugaresMarca = document.querySelectorAll("#nombre-marca");
-        if (marca && lugaresMarca.length > 0) {
+        if (marca) {
             lugaresMarca.forEach(el => {
                 el.textContent = marca;
             });
         }
 
-        // ✅ Reemplazar el logo si fue guardado previamente
-        const logoGuardado = localStorage.getItem("logoGuardado");
-        const logoNavbar = document.getElementById("navbar-logo");
-        if (logoGuardado && logoNavbar) {
-            logoNavbar.src = logoGuardado;
-        }
-
-        // Mostrar/ocultar botón de cierre de sesión
         const salirItem = document.getElementById("salir-item");
         const cerrarSesionBtn = document.getElementById("cerrar-sesion");
+        const logoLink = document.getElementById("logo-link");
+
         const currentPage = window.location.pathname;
         const sesionActiva = localStorage.getItem("logueado") === "true";
 
+        // ✅ Mostrar/ocultar botón "Cerrar sesión"
         if (salirItem) {
             salirItem.style.display = sesionActiva ? "block" : "none";
         }
 
-        // ✅ Lógica del logo-link según sesión y página actual
-        const logoLink = document.getElementById("logo-link");
+        // ✅ Lógica del logo-link
         if (logoLink) {
             if (currentPage.includes("index.html")) {
                 logoLink.href = sesionActiva ? "/src/dashboard.html" : "/src/login.html";
@@ -51,11 +43,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // ✅ Cierre de sesión con SweetAlert2
+        // 🚪 Cerrar sesión con SweetAlert2
         if (cerrarSesionBtn) {
             cerrarSesionBtn.addEventListener("click", (e) => {
                 e.preventDefault();
-                localStorage.removeItem("logueado");
+                localStorage.removeItem("logueado"); // Solo eliminamos estado de sesión
 
                 Swal.fire({
                     icon: "info",
@@ -68,13 +60,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             });
         }
+
     });
 
     // ✅ Cargar footer normalmente
-    loadComponent("footer", "/components/footer.html", () => {
-        setTimeout(() => {
-            aplicarLogo("footer-logo");
-            aplicarLogo("logo-preview");
-        }, 100);
-    });
+    loadComponent("footer", "/components/footer.html");
 });

@@ -1,284 +1,252 @@
-const API_URL = "https://firstp-api-production.up.railway.app/api";
-const CLOUDINARY_PRESET = "firstp"; // Asegurate que esté creado en tu panel Cloudinary
+// Carga inicial desde localStorage (si existe)
+const productos = JSON.parse(localStorage.getItem("productosFirstp")) || [];
+const contenedor = document.getElementById("cards-dashboard");
 
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("btn-nuevo-producto")?.addEventListener("click", mostrarFormularioProducto);
-    cargarProductosExistentes();
-});
+// Renderiza todas las cards del dashboard
+function renderDashboard() {
+    contenedor.innerHTML = "";
 
-// 🔼 Subida de imagen a Cloudinary
-async function uploadToCloudinary(file) {
-    const url = "https://api.cloudinary.com/v1_1/dhuxbiud1/image/upload";
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_PRESET);
-
-    try {
-        const res = await fetch(url, { method: "POST", body: formData });
-        if (!res.ok) throw new Error("No se pudo subir la imagen");
-        const data = await res.json();
-        return data.secure_url;
-    } catch (err) {
-        console.error("Error al subir a Cloudinary:", err.message);
-        Swal.fire("Error", "No se pudo subir la imagen", "error");
-        return null;
-    }
-}
-
-// 🟢 Mostrar formulario nuevo producto
-function mostrarFormularioProducto() {
-    Swal.fire({
-        title: "Nuevo Producto",
-        html: `
-            <input type="text" id="nombre" class="swal2-input" placeholder="Nombre del producto">
-            <textarea id="descripcion" class="swal2-textarea" placeholder="Descripción del producto"></textarea>
-            <input type="number" id="precio" class="swal2-input" placeholder="Precio">
-            <input type="file" id="imagen" class="swal2-file" accept="image/*">
-        `,
-        showCancelButton: true,
-        confirmButtonText: "Guardar borrador",
-        focusConfirm: false,
-        preConfirm: () => {
-            const nombre = document.getElementById("nombre").value.trim();
-            const descripcion = document.getElementById("descripcion").value.trim();
-            const precio = parseFloat(document.getElementById("precio").value);
-            const imagen = document.getElementById("imagen").files[0];
-
-            if (!nombre || !descripcion || isNaN(precio) || !imagen) {
-                Swal.showValidationMessage("Todos los campos son obligatorios y deben ser válidos");
-                return false;
-            }
-
-            return { nombre, descripcion, precio, imagen };
-        }
-    }).then(async result => {
-        if (!result.isConfirmed) return;
-        const { nombre, descripcion, precio, imagen } = result.value;
-        const imagenUrl = await uploadToCloudinary(imagen);
-        if (!imagenUrl) return;
-
-        const payload = { nombre, descripcion, precio, imagen: imagenUrl, publicado: false };
-        try {
-            const res = await fetch(`${API_URL}/products`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            if (!res.ok) throw new Error("No se pudo guardar el producto");
-
-            Swal.fire("¡Guardado!", "El producto fue guardado como borrador.", "success");
-            cargarProductosExistentes();
-        } catch (err) {
-            console.error("Error al guardar producto:", err.message);
-            Swal.fire("Error", "No se pudo guardar el producto", "error");
-        }
+    productos.forEach((p) => {
+        const card = document.createElement("div");
+        card.className = "col-md-4";
+        card.innerHTML = `
+      <div class="card shadow h-100">
+        <img src="${p.imagen || "placeholder.jpg"}" class="card-img-top" alt="${p.nombre}" />
+        <div class="card-body">
+          <h5 class="card-title">${p.nombre}</h5>
+          <p class="card-text">${p.descripcion}</p>
+          <p><strong>Precio:</strong> $${p.precio}</p>
+          <p><strong>Publicado:</strong> ${p.publicado ? "✅" : "❌"}</p>
+          <button class="btn btn-primary editar" data-id="${p.id}">Editar</button>
+          <button class="btn btn-danger eliminar" data-id="${p.id}">Eliminar</button>
+          <button class="btn btn-secondary publicar" data-id="${p.id}">
+            ${p.publicado ? "Ocultar" : "Publicar"}
+          </button>
+        </div>
+      </div>
+    `;
+        contenedor.appendChild(card);
     });
 }
 
-// 🧩 Crear card editable
-function crearCardEditable({ id, nombre, descripcion, precio, imagenUrl, publicado }) {
-    const esIndex = location.pathname === "/" || location.pathname.endsWith("index.html");
-    if (esIndex && !publicado) return;
-
-    const card = document.createElement("div");
-    card.className = "card mb-3 shadow-sm position-relative";
-
-    card.innerHTML = `
-        <img src="${imagenUrl}" class="card-img-top" alt="${nombre}" onerror="this.src='/static/img/productos/placeholder.jpg';">
-        <div class="card-body">
-            <h5 class="card-title">${nombre}</h5>
-            <p class="card-text">${descripcion}</p>
-            <p class="card-text"><strong>$${precio}</strong></p>
-
-            ${!esIndex ? `
-                <div class="d-flex justify-content-between mt-3">
-                    <button class="btn btn-sm btn-info" onclick="editarProducto('${id}')">Editar</button>
-                    <button class="btn btn-sm btn-danger" onclick="eliminarProducto('${id}')">Eliminar</button>
-                    <button class="btn btn-sm ${publicado ? 'btn-secondary' : 'btn-success'}"
-                            onclick="${publicado ? `ocultarProducto('${id}')` : `publicarProducto('${id}')`}">
-                        <i class="fa-solid ${publicado ? 'fa-xmark text-danger' : 'fa-check text-light'}"></i>
-                        ${publicado ? "Ocultar" : "Publicar"}
-                    </button>
-                </div>` : ""
-            }
-        </div>
-    `;
-
-    if (!esIndex && !publicado) {
-        const badge = document.createElement("span");
-        badge.className = "badge bg-warning text-dark position-absolute top-0 end-0 m-2";
-        badge.textContent = "Borrador";
-        card.appendChild(badge);
-    }
-
-    return card;
+// Guarda los productos en localStorage
+function guardarProductos() {
+    localStorage.setItem("productosFirstp", JSON.stringify(productos));
 }
 
-// ✏️ Editar producto
-async function editarProducto(id) {
-    try {
-        const res = await fetch(`${API_URL}/products/${id}`);
-        if (!res.ok) throw new Error("No se pudo obtener el producto");
+// Agrega un nuevo producto
+function agregarProducto(producto) {
+    producto.id = Date.now();
+    productos.push(producto);
+    guardarProductos();
+    renderDashboard();
+}
 
-        const producto = await res.json();
+// Crea el botón para agregar productos
+function crearBotonAgregar() {
+    const btn = document.createElement("button");
+    btn.id = "btn-nuevo";
+    btn.textContent = "➕ Agregar producto";
+    btn.className = "btn btn-success";
+    document.getElementById("boton-agregar").appendChild(btn);
+}
 
+// Manejador general de eventos
+document.addEventListener("click", (e) => {
+    const id = parseInt(e.target.dataset.id);
+    const producto = productos.find(p => p.id === id);
+
+    if (e.target.classList.contains("editar")) {
         Swal.fire({
-            title: "Editar Producto",
+            title: "Editar producto",
             html: `
-                <input type="text" id="edit-nombre" class="swal2-input" value="${producto.nombre}" placeholder="Nombre">
-                <textarea id="edit-descripcion" class="swal2-textarea">${producto.descripcion}</textarea>
-                <input type="number" id="edit-precio" class="swal2-input" value="${producto.precio}" placeholder="Precio">
-                <input type="file" id="edit-imagen" class="swal2-file" accept="image/*">
-                <img src="${producto.imagen}" alt="Imagen actual" style="max-width: 100%; margin-top:10px;" />
-            `,
-            showCancelButton: true,
-            confirmButtonText: "Guardar cambios",
+        <input id="edit-nombre" class="swal2-input" value="${producto.nombre}" />
+        <input id="edit-desc" class="swal2-input" value="${producto.descripcion}" />
+        <input id="edit-precio" class="swal2-input" type="number" value="${producto.precio}" />
+        <input id="edit-imagen" class="swal2-file" type="file" accept="image/*" />
+      `,
+            confirmButtonText: "Guardar",
+            focusConfirm: false,
             preConfirm: () => {
-                const nombre = document.getElementById("edit-nombre").value.trim();
-                const descripcion = document.getElementById("edit-descripcion").value.trim();
+                const nombre = document.getElementById("edit-nombre").value;
+                const descripcion = document.getElementById("edit-desc").value;
                 const precio = parseFloat(document.getElementById("edit-precio").value);
-                const imagenArchivo = document.getElementById("edit-imagen").files[0];
+                const imagenInput = document.getElementById("edit-imagen");
+                const archivo = imagenInput.files[0];
 
                 if (!nombre || !descripcion || isNaN(precio)) {
-                    Swal.showValidationMessage("Todos los campos son obligatorios y válidos");
+                    Swal.showValidationMessage("Todos los campos son obligatorios");
                     return false;
                 }
 
-                return { nombre, descripcion, precio, imagenArchivo };
+                if (archivo) {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            resolve({ nombre, descripcion, precio, nuevaImagen: reader.result });
+                        };
+                        reader.readAsDataURL(archivo);
+                    });
+                }
+
+                return { nombre, descripcion, precio };
             }
-        }).then(async result => {
-            if (!result.isConfirmed) return;
-            const { nombre, descripcion, precio, imagenArchivo } = result.value;
-
-            const imagenUrl = imagenArchivo ? await uploadToCloudinary(imagenArchivo) : producto.imagen;
-
-            const payload = { nombre, descripcion, precio, imagen: imagenUrl };
-
-            const res = await fetch(`${API_URL}/products/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            if (!res.ok) throw new Error("No se pudo actualizar el producto");
-
-            Swal.fire("¡Actualizado!", "El producto fue modificado.", "success");
-            cargarProductosExistentes();
+        }).then((r) => {
+            if (r.isConfirmed) {
+                producto.nombre = r.value.nombre;
+                producto.descripcion = r.value.descripcion;
+                producto.precio = r.value.precio;
+                if (r.value.nuevaImagen) {
+                    producto.imagen = r.value.nuevaImagen;
+                }
+                guardarProductos();
+                renderDashboard();
+            }
         });
-    } catch (err) {
-        console.error("Error al editar producto:", err.message);
-        Swal.fire("Error", "No se pudo cargar el formulario", "error");
     }
-}
 
-// 🗑️ Eliminar producto
-async function eliminarProducto(id) {
-    const confirmacion = await Swal.fire({
-        title: "¿Eliminar producto?",
-        text: "Esta acción no se puede deshacer.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar"
-    });
-
-    if (!confirmacion.isConfirmed) return;
-
-    try {
-        const res = await fetch(`${API_URL}/products/${id}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Error al eliminar producto");
-
-        document.querySelector(`[onclick="editarProducto('${id}')"]`)?.closest(".card")?.remove();
-
-        Swal.fire("Eliminado", "El producto fue eliminado correctamente.", "success");
-    } catch (error) {
-        console.error("Error al eliminar producto:", error.message);
-        Swal.fire("Error", `No se pudo eliminar el producto: ${error.message}`, "error");
+    if (e.target.classList.contains("eliminar")) {
+        Swal.fire({
+            title: "¿Eliminar este producto?",
+            showCancelButton: true,
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar",
+        }).then((r) => {
+            if (r.isConfirmed) {
+                const index = productos.findIndex(p => p.id === id);
+                productos.splice(index, 1);
+                guardarProductos();
+                renderDashboard();
+            }
+        });
     }
+
+    if (e.target.classList.contains("publicar")) {
+        producto.publicado = !producto.publicado;
+        guardarProductos();
+        renderDashboard();
+    }
+
+    if (e.target.id === "btn-nuevo") {
+        Swal.fire({
+            title: "Agregar nuevo producto",
+            html: `
+        <input id="nuevo-nombre" class="swal2-input" placeholder="Nombre" />
+        <input id="nuevo-desc" class="swal2-input" placeholder="Descripción" />
+        <input id="nuevo-precio" class="swal2-input" type="number" placeholder="Precio" />
+        <input id="nuevo-img" class="swal2-file" type="file" accept="image/*" />
+      `,
+            confirmButtonText: "Agregar",
+            focusConfirm: false,
+            preConfirm: () => {
+                const nombre = document.getElementById("nuevo-nombre").value;
+                const descripcion = document.getElementById("nuevo-desc").value;
+                const precio = parseFloat(document.getElementById("nuevo-precio").value);
+                const fileInput = document.getElementById("nuevo-img");
+                const archivo = fileInput.files[0];
+
+                if (!nombre || !descripcion || isNaN(precio) || !archivo) {
+                    Swal.showValidationMessage("Todos los campos son obligatorios");
+                    return false;
+                }
+
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve({
+                            nombre,
+                            descripcion,
+                            precio,
+                            imagen: reader.result,
+                            publicado: false
+                        });
+                    };
+                    reader.readAsDataURL(archivo);
+                });
+            }
+        }).then((r) => {
+            if (r.isConfirmed) {
+                agregarProducto(r.value);
+            }
+        });
+    }
+});
+
+// Carga inicial al abrir el dashboard
+document.addEventListener("DOMContentLoaded", () => {
+    crearBotonAgregar();
+    renderDashboard();
+});
+
+const themeSelector = document.getElementById("theme-selector");
+const themeLink = document.querySelector("link[href*='bootswatch']");
+const saveButton = document.getElementById("save-theme");
+
+// Cargar tema guardado al entrar
+const savedTheme = localStorage.getItem("selectedTheme");
+if (savedTheme) {
+    themeSelector.value = savedTheme;
+    themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${savedTheme}/bootstrap.min.css`;
 }
 
-// 🔄 Cambiar estado de publicación
-function actualizarEstadoPublicacion(id, estado, titulo, mensaje) {
-    fetch(`${API_URL}/products/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ publicado: estado })
-    })
-    .then(res => {
-        if (!res.ok) throw new Error("Error al cambiar estado de publicación");
-        return res.json();
-    })
-    .then(() => {
-        Swal.fire(titulo, mensaje, "success");
-        cargarProductosExistentes();
-    })
-    .catch(err => {
-        console.error("Error:", err.message);
-        Swal.fire("Error", `No se pudo actualizar el estado: ${err.message}`, "error");
+// Cambiar tema al seleccionar
+themeSelector.addEventListener("change", (e) => {
+    const theme = e.target.value;
+    themeLink.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/${theme}/bootstrap.min.css`;
+});
+
+// Guardar configuración
+saveButton.addEventListener("click", () => {
+    const selectedTheme = themeSelector.value;
+    localStorage.setItem("selectedTheme", selectedTheme);
+    Swal.fire({
+        icon: "success",
+        title: "Configuración guardada",
+        text: `Tu tema "${selectedTheme}" fue guardado.`,
+        timer: 2000,
+        showConfirmButton: false
     });
-}
+});
 
-function publicarProducto(id) {
-    actualizarEstadoPublicacion(id, true, "Publicado", "El producto fue publicado con éxito.");
-}
+// Cambiar el nombre de la marca o local
+function guardarMarca() {
+    const marca = document.getElementById('theme-input').value;
 
-function ocultarProducto(id) {
-    actualizarEstadoPublicacion(id, false, "Ocultado", "El producto ya no se muestra en la página principal.");
-}
+    if (marca.trim()) {
+        // ✅ Guardar en localStorage
+        localStorage.setItem('nombreMarca', marca);
 
-// 🔁 Cargar productos en dashboard/index
-async function cargarProductosExistentes() {
-    const cardsContainer = document.getElementById("cards-dashboard") || document.querySelector(".productos");
-
-    cardsContainer.innerHTML = `
-        <div class="text-center w-100">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2">Cargando productos...</p>
-        </div>
-    `;
-
-    try {
-        const res = await fetch(`${API_URL}/products`, { cache: "no-store" });
-        if (!res.ok) throw new Error("Error al obtener productos");
-
-        const productos = await res.json();
-        cardsContainer.innerHTML = "";
-
-        const fragment = document.createDocumentFragment();
-        const esIndex = location.pathname === "/" || location.pathname.endsWith("index.html");
-
-        const productosFiltrados = esIndex ? productos.filter(p => p.publicado) : productos;
-
-        productosFiltrados.forEach(producto => {
-            const card = crearCardEditable({
-                id: producto._id,
-                nombre: producto.nombre,
-                descripcion: producto.descripcion,
-                precio: producto.precio,
-                imagenUrl: producto.imagen,
-                publicado: producto.publicado
-            });
-
-            if (card) fragment.appendChild(card);
+        // 🎉 SweetAlert de confirmación
+        Swal.fire({
+            title: '¡Marca guardada!',
+            html: `La marca <strong>${marca}</strong> ha sido registrada.`,
+            icon: 'success',
+            confirmButtonText: 'Perfecto'
         });
 
-        cardsContainer.appendChild(fragment);
+        // 🔄 Actualizar texto en elementos con cierto ID
+        const elementosActualizables = document.querySelectorAll('[data-marca]');
+        elementosActualizables.forEach(el => {
+            el.textContent = marca;
+        });
 
-        if (productosFiltrados.length === 0) {
-            cardsContainer.innerHTML = `
-                <div class="text-center w-100">
-                    <p class="text-muted">No hay productos cargados.</p>
-                </div>
-            `;
-        }
-
-    } catch (error) {
-        console.error("Error al cargar productos:", error.message);
-        cardsContainer.innerHTML = `
-            <div class="text-center w-100 text-danger">
-                <p>No se pudieron cargar los productos.</p>
-            </div>
-        `;
+        // 🧼 Limpiar input
+        document.getElementById('theme-input').value = '';
+    } else {
+        Swal.fire({
+            title: 'Campo vacío',
+            text: 'Por favor ingresa un nombre.',
+            icon: 'warning',
+            confirmButtonText: 'Entendido'
+        });
     }
+}
+
+const marca = localStorage.getItem('nombreMarca');
+const lugaresMarca = document.querySelectorAll('#nombre-marca');
+
+if (marca && lugaresMarca.length > 0) {
+  lugaresMarca.forEach(el => {
+    el.textContent = marca;
+  });
 }

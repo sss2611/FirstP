@@ -4,84 +4,12 @@
   margin: 0 auto 15px auto;
   clear: both;
 }
-
 #theme-box .theme-item {
   padding: 10px;
   cursor: pointer;
   border: 1px solid #ccc;
   margin-bottom: 5px;
 }
-
-#brand-box,
-#logo-box {
-  width: 300px;
-  float: right;
-  margin: 0 auto 15px auto;
-  clear: both;
-}
-
-#brand-box .brand-item,
-#logo-box .logo-item {
-  padding: 10px;
-  cursor: pointer;
-  border: 1px solid #ccc;
-  margin-bottom: 5px;
-}
-
-.card {
-    display: flex;
-    flex-direction: column;
-    max-width: 100%;
-    margin-bottom: 1rem;
-    border-radius: 0.5rem;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.card-img-top {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    aspect-ratio: 4/3;
-}
-
-.card-body {
-    padding: 1rem;
-}
-
-.card-title {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-}
-
-.card-text {
-    font-size: 0.95rem;
-    margin-bottom: 0.25rem;
-}
-
-.card .btn {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.6rem;
-    white-space: nowrap;
-}
-
-@media (min-width: 576px) {
-    .card {
-        flex-direction: row;
-        align-items: center;
-    }
-
-    .card-img-top {
-        width: 40%;
-        height: 100%;
-        border-right: 1px solid #eee;
-    }
-
-    .card-body {
-        width: 60%;
-    }
-}
-
 
 .btn-custom {
   background-color: #0d6efd;
