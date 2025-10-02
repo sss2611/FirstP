@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
             timer: 3000,
             showConfirmButton: false
           }).then(() => {
-            window.location.href = `https://wa.me/5493854864263?text=${mensaje}`;
+            window.location.href = `https://wa.me/5493855075058?text=${mensaje}`;
           });
         });
 
